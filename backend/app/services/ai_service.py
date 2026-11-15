@@ -54,16 +54,14 @@ class MockAIAssistantProvider(BaseAIAssistantProvider):
     def __init__(self) -> None:
         self.provider_id = "mock-care-assistant-v1"
 
-    def generate_response(
+    def _refuse_medical_diagnosis(
         self,
-        user: AuthenticatedUser,
-        authorized_profiles: List[FamilyMemberProfile],
         query: str,
-        history: Optional[List[AIChatMessage]] = None,
-    ) -> AIChatResponse:
+        user: Any,
+        authorized_profiles: List[FamilyMemberProfile],
+    ) -> Optional[AIChatResponse]:
+        """Detect diagnostic, emergency, or prescription queries and return immediate refusal."""
         cleaned_query = query.strip().lower()
-
-        # 1. Medical Diagnosis & Prescription Safety Guardrail
         medical_risk_patterns = [
             r"\b(diagnos[ei]|what disease|do i have|cancer|stroke|heart attack|prescribe|prescription|which medicine should i take|dose increase)\b",
             r"\b(cure|treat my|chest pain|unconscious|emergency symptoms)\b",
@@ -86,7 +84,23 @@ class MockAIAssistantProvider(BaseAIAssistantProvider):
                 is_mock=True,
                 disclaimer=DISCLAIMER_TEXT,
                 authorized_members_count=len(authorized_profiles),
+                authorized_member_names=[p.full_name for p in authorized_profiles],
             )
+        return None
+
+    def generate_response(
+        self,
+        user: AuthenticatedUser,
+        authorized_profiles: List[FamilyMemberProfile],
+        query: str,
+        history: Optional[List[AIChatMessage]] = None,
+    ) -> AIChatResponse:
+        cleaned_query = query.strip().lower()
+
+        # 1. Medical Diagnosis & Prescription Safety Guardrail
+        refusal = self._refuse_medical_diagnosis(query, user, authorized_profiles)
+        if refusal:
+            return refusal
 
         # 2. Check for Authorized Profiles Access
         if not authorized_profiles:
