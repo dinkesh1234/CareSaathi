@@ -20,6 +20,7 @@ from app.routers import (
     auth,
     continuity,
     integrations,
+    invitations,
     medications,
     profiles,
 )
@@ -144,6 +145,7 @@ async def health_check() -> Dict[str, Any]:
 # Register Application Routers
 app.include_router(auth.router)
 app.include_router(profiles.router)
+app.include_router(invitations.router)
 app.include_router(medications.router)
 app.include_router(appointments.router)
 app.include_router(continuity.router)

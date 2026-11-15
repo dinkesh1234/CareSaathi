@@ -5,7 +5,8 @@ with initial fictional demonstration data. Future production integration will bi
 this repository interface to Supabase PostgreSQL with database-enforced Row-Level Security.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+import secrets
 import threading
 from typing import Any, Dict, List, Optional
 import uuid
@@ -19,9 +20,11 @@ from app.schemas import (
     CareGapSeverity,
     CaregiverHandoff,
     CareContinuityOverview,
+    FamilyInvitation,
     FamilyMemberProfile,
     HandoffStatus,
     HealthcareAppointment,
+    InvitationStatus,
     MedicationItem,
     MedicationStatus,
     Role,
@@ -32,12 +35,13 @@ class DataRepository:
     """Thread-safe repository managing Users, Profiles, Medications, Appointments, and Care Continuity."""
 
     def __init__(self) -> None:
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._users: Dict[str, AuthenticatedUser] = {}
         self._profiles: Dict[str, FamilyMemberProfile] = {}
         self._medications: Dict[str, MedicationItem] = {}
         self._appointments: Dict[str, HealthcareAppointment] = {}
         self._handoffs: Dict[str, CaregiverHandoff] = {}
+        self._invitations: Dict[str, FamilyInvitation] = {}
         self._activities: List[CareActivityRecord] = []
         self._resolved_gap_ids: set[str] = set()
         self._seed_demo_data()
@@ -453,10 +457,6 @@ class DataRepository:
             updated_profile = FamilyMemberProfile(**profile_dict)
             self._profiles[profile_id] = updated_profile
             return updated_profile
-
-    def delete_profile(self, profile_id: str) -> bool:
-        with self._lock:
-            return self._profiles.pop(profile_id, None) is not None
 
     # ==========================================================================
     # Medications Operations
@@ -929,6 +929,161 @@ class DataRepository:
                 actor_name=actor_name,
             )
             return True
+
+    # --- Family Circle Invitations & Member Management ---
+
+    def create_invitation(
+        self,
+        family_id: str,
+        family_name: str,
+        invited_by_user_id: str,
+        invited_by_name: str,
+        invitee_email: str,
+        role: Role = Role.ADULT_MEMBER,
+        target_profile_id: Optional[str] = None,
+        relationship: str = "Family Member",
+    ) -> FamilyInvitation:
+        with self._lock:
+            invitation_id = f"inv_{uuid.uuid4().hex[:10]}"
+            token = f"invt_{secrets.token_urlsafe(24)}"
+            now = datetime.now(timezone.utc)
+            expires_at = (now + timedelta(days=7)).isoformat()
+            now_iso = now.isoformat()
+            link = f"http://127.0.0.1:3000/?invite_token={token}"
+
+            inv = FamilyInvitation(
+                invitation_id=invitation_id,
+                family_id=family_id,
+                family_name=family_name,
+                invited_by_user_id=invited_by_user_id,
+                invited_by_name=invited_by_name,
+                invitee_email=invitee_email.lower().strip(),
+                role=role,
+                token=token,
+                status=InvitationStatus.PENDING,
+                target_profile_id=target_profile_id,
+                relationship=relationship,
+                expires_at=expires_at,
+                created_at=now_iso,
+                invitation_link=link,
+            )
+            self._invitations[token] = inv
+            self.record_activity(
+                family_id=family_id,
+                icon="✉️",
+                title="Family member invited",
+                subtitle=f"{invited_by_name} sent a care circle invitation to {invitee_email} as {role.value.replace('_', ' ').title()}.",
+                actor_name=invited_by_name,
+            )
+            return inv
+
+    def list_invitations(self, family_id: str) -> List[FamilyInvitation]:
+        with self._lock:
+            now_iso = datetime.now(timezone.utc).isoformat()
+            results = []
+            for inv in self._invitations.values():
+                if inv.family_id == family_id:
+                    # Auto-expire if past expires_at
+                    if inv.status == InvitationStatus.PENDING and inv.expires_at < now_iso:
+                        inv.status = InvitationStatus.EXPIRED
+                    results.append(inv)
+            return sorted(results, key=lambda x: x.created_at, reverse=True)
+
+    def get_invitation_by_token(self, token: str) -> Optional[FamilyInvitation]:
+        with self._lock:
+            inv = self._invitations.get(token)
+            if not inv:
+                return None
+            now_iso = datetime.now(timezone.utc).isoformat()
+            if inv.status == InvitationStatus.PENDING and inv.expires_at < now_iso:
+                inv.status = InvitationStatus.EXPIRED
+            return inv
+
+    def accept_invitation(self, token: str, user_id: str, user_email: str) -> Optional[FamilyInvitation]:
+        with self._lock:
+            inv = self.get_invitation_by_token(token)
+            if not inv or inv.status != InvitationStatus.PENDING:
+                return None
+
+            user = self._users.get(user_id)
+            if not user:
+                return None
+
+            # Verify email match (case-insensitive)
+            if user_email.lower().strip() != inv.invitee_email.lower().strip():
+                return None
+
+            # Add user to the invited family and assign role
+            user.family_id = inv.family_id
+            user.role = inv.role
+            inv.status = InvitationStatus.ACCEPTED
+
+            # If assigned to a target profile as caregiver
+            if inv.target_profile_id and inv.role == Role.CAREGIVER:
+                profile = self._profiles.get(inv.target_profile_id)
+                if profile and user_id not in profile.assigned_caregiver_ids:
+                    profile.assigned_caregiver_ids.append(user_id)
+
+            self.record_activity(
+                family_id=inv.family_id,
+                icon="🤝",
+                title="Care circle invitation accepted",
+                subtitle=f"{user.full_name} ({user_email}) joined the family care circle as {inv.role.value.replace('_', ' ').title()}.",
+                actor_name=user.full_name,
+            )
+            return inv
+
+    def cancel_invitation(self, invitation_id: str, family_id: str) -> bool:
+        with self._lock:
+            for token, inv in list(self._invitations.items()):
+                if inv.invitation_id == invitation_id and inv.family_id == family_id:
+                    inv.status = InvitationStatus.CANCELLED
+                    return True
+            return False
+
+    def delete_profile(self, profile_id: str, family_id: Optional[str] = None) -> bool:
+        with self._lock:
+            profile = self._profiles.get(profile_id)
+            if not profile:
+                return False
+            if family_id and profile.family_id != family_id:
+                return False
+            target_family_id = profile.family_id
+            name = profile.full_name
+            del self._profiles[profile_id]
+            for mid, m in list(self._medications.items()):
+                if m.profile_id == profile_id:
+                    del self._medications[mid]
+            for aid, a in list(self._appointments.items()):
+                if a.profile_id == profile_id:
+                    del self._appointments[aid]
+            self.record_activity(
+                family_id=target_family_id,
+                icon="🗑️",
+                title="Family profile removed",
+                subtitle=f"{name}'s profile was removed from the family circle.",
+                actor_name="Family Owner",
+            )
+            return True
+
+    def remove_user_from_family(self, user_id: str, family_id: str) -> bool:
+        with self._lock:
+            user = self._users.get(user_id)
+            if user and user.family_id == family_id:
+                user.family_id = f"fam_isolated_{uuid.uuid4().hex[:6]}"
+                user.role = Role.FAMILY_OWNER
+                for p in self._profiles.values():
+                    if user_id in p.assigned_caregiver_ids:
+                        p.assigned_caregiver_ids.remove(user_id)
+                self.record_activity(
+                    family_id=family_id,
+                    icon="👤",
+                    title="Member removed from care circle",
+                    subtitle=f"{user.full_name} was removed from the family circle.",
+                    actor_name="Family Owner",
+                )
+                return True
+            return False
 
 
 # Global repository instance

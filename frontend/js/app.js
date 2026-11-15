@@ -717,12 +717,222 @@ function setupEventListeners() {
     });
   }
 
+  // Google OAuth Login Buttons
+  const loginGoogleBtn = document.getElementById('login-google-btn');
+  if (loginGoogleBtn) {
+    loginGoogleBtn.addEventListener('click', () => initiateGoogleLogin());
+  }
   const googleLoginBtn = document.getElementById('google-login-btn');
   if (googleLoginBtn) {
-    googleLoginBtn.addEventListener('click', () => {
-      initiateGoogleLogin();
+    googleLoginBtn.addEventListener('click', () => initiateGoogleLogin());
+  }
+
+  // Instant Demo Sign-In Buttons
+  document.querySelectorAll('.btn-demo-account').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const demoId = btn.dataset.demoId;
+      if (demoId) selectDemoAccount(demoId);
+    });
+  });
+
+  // Topbar User Profile Dropdown Toggle
+  const userProfilePill = document.getElementById('user-profile-pill');
+  const userProfileDropdown = document.getElementById('user-profile-dropdown');
+  if (userProfilePill && userProfileDropdown) {
+    userProfilePill.addEventListener('click', (e) => {
+      e.stopPropagation();
+      userProfileDropdown.classList.toggle('open');
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!userProfileDropdown.contains(e.target) && !userProfilePill.contains(e.target)) {
+        userProfileDropdown.classList.remove('open');
+      }
     });
   }
+
+  // Dropdown Theme Toggle
+  const dropdownThemeToggle = document.getElementById('dropdown-theme-toggle');
+  if (dropdownThemeToggle) {
+    dropdownThemeToggle.addEventListener('click', (e) => {
+      e.preventDefault();
+      toggleTheme();
+    });
+  }
+
+  // Logout Buttons & Modal Handlers
+  const dropdownLogoutBtn = document.getElementById('dropdown-logout-btn');
+  const sidebarLogoutBtn = document.getElementById('sidebar-logout-btn');
+  const settingsLogoutBtn = document.getElementById('settings-logout-btn');
+  const confirmLogoutBtn = document.getElementById('confirm-logout-btn');
+  const cancelLogoutBtn = document.getElementById('cancel-logout-btn');
+
+  if (dropdownLogoutBtn) {
+    dropdownLogoutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (userProfileDropdown) userProfileDropdown.classList.remove('open');
+      openLogoutModal();
+    });
+  }
+  if (sidebarLogoutBtn) {
+    sidebarLogoutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openLogoutModal();
+    });
+  }
+  if (settingsLogoutBtn) {
+    settingsLogoutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openLogoutModal();
+    });
+  }
+  if (confirmLogoutBtn) {
+    confirmLogoutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      performLogout();
+    });
+  }
+  if (cancelLogoutBtn) {
+    cancelLogoutBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      closeLogoutModal();
+    });
+  }
+
+  // Family Invitations Modal & Form
+  const topnavInviteBtn = document.getElementById('topnav-invite-btn');
+  const openInviteFamilyBtn = document.getElementById('open-invite-family-btn');
+  const openInviteModalSubBtn = document.getElementById('open-invite-modal-sub-btn');
+  const inviteFamilyModal = document.getElementById('invite-family-modal');
+  const inviteFamilyForm = document.getElementById('invite-family-form');
+  const btnCopyInviteLink = document.getElementById('btn-copy-invite-link');
+
+  const openInviteDialog = () => {
+    if (inviteFamilyModal) {
+      inviteFamilyModal.classList.add('active');
+      const resBox = document.getElementById('invite-result-box');
+      if (resBox) resBox.style.display = 'none';
+    }
+  };
+
+  if (topnavInviteBtn) topnavInviteBtn.addEventListener('click', openInviteDialog);
+  if (openInviteFamilyBtn) openInviteFamilyBtn.addEventListener('click', openInviteDialog);
+  if (openInviteModalSubBtn) openInviteModalSubBtn.addEventListener('click', openInviteDialog);
+
+  if (inviteFamilyForm) {
+    inviteFamilyForm.addEventListener('submit', (e) => {
+      handleCreateInvitation(e);
+    });
+  }
+
+  if (btnCopyInviteLink) {
+    btnCopyInviteLink.addEventListener('click', () => {
+      const copyInput = document.getElementById('invite-link-copy-input');
+      if (copyInput && copyInput.value) {
+        navigator.clipboard.writeText(copyInput.value);
+        showNotificationToast('Invitation link copied to clipboard!');
+      }
+    });
+  }
+
+  // Floating AI Quick Panel Controls
+  const floatingAiLauncher = document.getElementById('floating-ai-launcher');
+  const floatingAiDrawer = document.getElementById('floating-ai-drawer');
+  const drawerCloseBtn = document.getElementById('drawer-close-btn');
+  const drawerExpandBtn = document.getElementById('drawer-expand-btn');
+  const drawerChatForm = document.getElementById('drawer-chat-form');
+
+  if (floatingAiLauncher && floatingAiDrawer) {
+    floatingAiLauncher.addEventListener('click', () => {
+      floatingAiDrawer.classList.toggle('hidden');
+      if (!floatingAiDrawer.classList.contains('hidden')) {
+        const inp = document.getElementById('drawer-chat-input');
+        if (inp) inp.focus();
+      }
+    });
+  }
+
+  if (drawerCloseBtn && floatingAiDrawer) {
+    drawerCloseBtn.addEventListener('click', () => {
+      floatingAiDrawer.classList.add('hidden');
+    });
+  }
+
+  if (drawerExpandBtn) {
+    drawerExpandBtn.addEventListener('click', () => {
+      if (floatingAiDrawer) floatingAiDrawer.classList.add('hidden');
+      switchView('ai-assistant');
+    });
+  }
+
+  if (drawerChatForm) {
+    drawerChatForm.addEventListener('submit', (e) => {
+      handleDrawerChatSubmit(e);
+    });
+  }
+
+  // Drawer Prompt Chips
+  document.querySelectorAll('.chip-prompt').forEach((chip) => {
+    chip.addEventListener('click', () => {
+      const prompt = chip.dataset.prompt;
+      const inp = document.getElementById('drawer-chat-input');
+      if (inp && prompt) {
+        inp.value = prompt;
+        if (drawerChatForm) drawerChatForm.dispatchEvent(new Event('submit'));
+      }
+    });
+  });
+
+  // Legal Modal Triggers (Privacy Policy & Terms of Service)
+  const linkOpenTerms = document.getElementById('link-open-terms');
+  const btnSettingsOpenTerms = document.getElementById('btn-settings-open-terms');
+  const termsModal = document.getElementById('terms-modal');
+  const linkOpenPrivacy = document.getElementById('link-open-privacy');
+  const btnSettingsOpenPrivacy = document.getElementById('btn-settings-open-privacy');
+  const privacyPolicyModal = document.getElementById('privacy-policy-modal');
+
+  const openTerms = (e) => {
+    if (e) e.preventDefault();
+    if (termsModal) termsModal.classList.add('active');
+  };
+  const openPrivacy = (e) => {
+    if (e) e.preventDefault();
+    if (privacyPolicyModal) privacyPolicyModal.classList.add('active');
+  };
+
+  if (linkOpenTerms) linkOpenTerms.addEventListener('click', openTerms);
+  if (btnSettingsOpenTerms) btnSettingsOpenTerms.addEventListener('click', openTerms);
+  if (linkOpenPrivacy) linkOpenPrivacy.addEventListener('click', openPrivacy);
+  if (btnSettingsOpenPrivacy) btnSettingsOpenPrivacy.addEventListener('click', openPrivacy);
+
+  // Health Center Quick Buttons
+  const hcAddRxBtn = document.getElementById('hc-add-rx-btn');
+  const hcOpenRxModalBtn = document.getElementById('hc-open-rx-modal-btn');
+  const addPrescriptionModal = document.getElementById('add-prescription-modal');
+  if ((hcAddRxBtn || hcOpenRxModalBtn) && addPrescriptionModal) {
+    const openRx = () => addPrescriptionModal.classList.add('active');
+    if (hcAddRxBtn) hcAddRxBtn.addEventListener('click', openRx);
+    if (hcOpenRxModalBtn) hcOpenRxModalBtn.addEventListener('click', openRx);
+  }
+
+  const hcExportBriefBtn = document.getElementById('hc-export-brief-btn');
+  const doctorBriefModal = document.getElementById('doctor-brief-modal');
+  if (hcExportBriefBtn && doctorBriefModal) {
+    hcExportBriefBtn.addEventListener('click', () => doctorBriefModal.classList.add('active'));
+  }
+
+  // Health Center Member Filter Tabs
+  document.querySelectorAll('.hc-member-tab').forEach((tab) => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.hc-member-tab').forEach((t) => {
+        t.className = 'btn btn-sm btn-secondary hc-member-tab';
+      });
+      tab.className = 'btn btn-sm btn-primary hc-member-tab active';
+      const member = tab.dataset.member;
+      filterHealthCenterMember(member);
+    });
+  });
 
   const googleLogoutBtn = document.getElementById('google-logout-btn');
   if (googleLogoutBtn) {
@@ -739,16 +949,16 @@ function setupEventListeners() {
 
   if (authTabLogin && authTabSignup && emailLoginForm && emailSignupForm) {
     authTabLogin.addEventListener('click', () => {
-      emailLoginForm.style.display = 'grid';
+      emailLoginForm.style.display = 'block';
       emailSignupForm.style.display = 'none';
-      authTabLogin.className = 'btn btn-sm btn-primary';
-      authTabSignup.className = 'btn btn-sm btn-secondary';
+      authTabLogin.className = 'auth-tab-btn active';
+      authTabSignup.className = 'auth-tab-btn';
     });
     authTabSignup.addEventListener('click', () => {
       emailLoginForm.style.display = 'none';
-      emailSignupForm.style.display = 'grid';
-      authTabLogin.className = 'btn btn-sm btn-secondary';
-      authTabSignup.className = 'btn btn-sm btn-primary';
+      emailSignupForm.style.display = 'block';
+      authTabLogin.className = 'auth-tab-btn';
+      authTabSignup.className = 'auth-tab-btn active';
     });
   }
 
@@ -2371,9 +2581,9 @@ async function sendAIMessage(queryText) {
 
     const data = await response.json();
     const formattedHtml = formatAIMarkdown(data.response);
-    const metaNote = `Model: ${data.model} (Verified mock) • Authorized profiles consulted: ${data.authorized_profiles_consulted?.join(', ') || 'None'}`;
+    const metaNote = `Provider: ${data.provider || 'CareSaathi AI'} • Authorized profiles: ${data.authorized_member_names?.join(', ') || data.authorized_members_count + ' member(s)'}`;
 
-    appendChatMessage('assistant', formattedHtml, metaNote, data.safety_disclaimer);
+    appendChatMessage('assistant', formattedHtml, metaNote, data.disclaimer || data.safety_disclaimer);
     appState.aiChatHistory.push({ role: 'assistant', content: data.response });
 
     logActivity(`AI Query: "${text.substring(0, 30)}${text.length > 30 ? '...' : ''}"`, 'Just now • AI Assistant', '✨');
@@ -2583,13 +2793,433 @@ async function triggerTestEmail() {
 }
 
 /**
+ * Floating Toast Notification Helper
+ */
+function showNotificationToast(msg, durationMs = 3500) {
+  let toast = document.getElementById('care-saathi-toast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'care-saathi-toast';
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background-color: var(--color-navy-900);
+      color: #FFFFFF;
+      padding: 0.75rem 1.5rem;
+      border-radius: var(--radius-full);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      font-size: 0.875rem;
+      font-weight: 600;
+      z-index: 99999;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      pointer-events: none;
+    `;
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML = `<span>ℹ️</span> <span>${escapeHTML(msg)}</span>`;
+  toast.style.opacity = '1';
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    toast.style.transform = 'translateX(-50%) translateY(20px)';
+  }, durationMs);
+}
+
+/**
+ * Reveal Application Shell (Authenticated)
+ */
+function revealAppShell() {
+  const loginScreen = document.getElementById('login-screen');
+  const appShell = document.getElementById('app-shell');
+  if (loginScreen) loginScreen.classList.add('hidden');
+  if (appShell) appShell.classList.remove('hidden');
+}
+
+/**
+ * Show Login Screen (Unauthenticated Gate)
+ */
+function showLoginScreen() {
+  const loginScreen = document.getElementById('login-screen');
+  const appShell = document.getElementById('app-shell');
+  if (loginScreen) loginScreen.classList.remove('hidden');
+  if (appShell) appShell.classList.add('hidden');
+  if (window.location.hash !== '#login') {
+    window.location.hash = '#login';
+  }
+}
+
+/**
+ * Open Logout Confirmation Dialog
+ */
+function openLogoutModal() {
+  const modal = document.getElementById('logout-confirm-modal');
+  if (modal) modal.classList.add('active');
+}
+
+/**
+ * Close Logout Confirmation Dialog
+ */
+function closeLogoutModal() {
+  const modal = document.getElementById('logout-confirm-modal');
+  if (modal) modal.classList.remove('active');
+}
+
+/**
+ * Perform Secure Logout
+ */
+async function performLogout() {
+  if (appState.activeToken) {
+    try {
+      await fetch(`${CONFIG.API_BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${appState.activeToken}`,
+        },
+      });
+    } catch (e) {
+      console.warn('Backend logout call notification:', e);
+    }
+  }
+
+  // Clear Session & Local Storage Auth Data
+  sessionStorage.removeItem('careSaathi_token');
+  sessionStorage.removeItem('careSaathi_user');
+  sessionStorage.removeItem('caresaathi_google_session');
+  localStorage.removeItem('careSaathi_token');
+  localStorage.removeItem('careSaathi_user');
+
+  // Reset State
+  appState.activeToken = null;
+  appState.currentUser = null;
+
+  // Close modals
+  closeLogoutModal();
+  document.querySelectorAll('.modal-overlay').forEach((m) => m.classList.remove('active'));
+
+  // Switch to Login Screen
+  showLoginScreen();
+  showNotificationToast('You have been logged out successfully.');
+  logActivity('Logged out of CareSaathi session', 'Just now • Auth', '🚪');
+}
+
+/**
+ * Select & Activate an Instant Demo Account
+ */
+function selectDemoAccount(demoId) {
+  const demoUsers = {
+    user_anil_01: {
+      label: 'Anil Sharma (Family Owner)',
+      user_id: 'user_anil_01',
+      email: 'anil.sharma@example.com',
+      role: 'family_owner',
+      family_id: 'fam_sharma_101',
+      token: 'demo_token_anil_sharma_family_owner_secret_2026',
+    },
+    user_caregiver_priya_03: {
+      label: 'Nurse Priya (Caregiver)',
+      user_id: 'user_caregiver_priya_03',
+      email: 'priya.nair@example.com',
+      role: 'caregiver',
+      family_id: 'fam_sharma_101',
+      token: 'demo_token_priya_caregiver_secret_2026',
+    },
+    user_sunita_02: {
+      label: 'Sunita Sharma (Parent / Guardian)',
+      user_id: 'user_sunita_02',
+      email: 'sunita.sharma@example.com',
+      role: 'parent_guardian',
+      family_id: 'fam_sharma_101',
+      token: 'demo_token_sunita_parent_secret_2026',
+    },
+    user_rajesh_99: {
+      label: 'Rajesh Verma (Cross-Family Attacker)',
+      user_id: 'user_rajesh_99',
+      email: 'rajesh.verma@example.com',
+      role: 'family_owner',
+      family_id: 'fam_verma_202',
+      token: 'demo_token_rajesh_verma_isolated_secret_2026',
+    },
+  };
+
+  const selected = demoUsers[demoId] || demoUsers['user_anil_01'];
+
+  // Persist session
+  sessionStorage.setItem('careSaathi_token', selected.token);
+  sessionStorage.setItem('careSaathi_user', JSON.stringify(selected));
+
+  applyUserSession(selected);
+  revealAppShell();
+  switchView('dashboard');
+  showNotificationToast(`Signed in as ${selected.label.split(' (')[0]}`);
+  logActivity(`Demo login as ${selected.label}`, 'Just now • Demo Auth', '🔑');
+  loadFamilyInvitations();
+}
+
+/**
+ * Handle Family Circle Invitation Creation
+ */
+async function handleCreateInvitation(e) {
+  if (e) e.preventDefault();
+  const emailInp = document.getElementById('invite-email');
+  const roleInp = document.getElementById('invite-role');
+  const relInp = document.getElementById('invite-relationship');
+  const resBox = document.getElementById('invite-result-box');
+  const resMsg = document.getElementById('invite-result-msg');
+  const linkInp = document.getElementById('invite-link-copy-input');
+
+  if (!emailInp || !emailInp.value) return;
+
+  const payload = {
+    invitee_email: emailInp.value.trim(),
+    role: roleInp ? roleInp.value : 'adult_member',
+    relationship: relInp ? relInp.value.trim() : 'Family Member',
+  };
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/family/invitations`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${appState.activeToken}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      alert(`Invitation error: ${data?.detail || data?.error?.message || 'Permission denied'}`);
+      return;
+    }
+
+    if (resBox && resMsg && linkInp) {
+      resBox.style.display = 'block';
+      resMsg.textContent = `Invitation token generated for ${data.invitee_email} (${data.role}). Status: ${data.status}.`;
+      linkInp.value = data.invitation_link || `http://127.0.0.1:3000/#invitation?token=${data.token}`;
+    }
+
+    showNotificationToast(`Invitation created for ${data.invitee_email}!`);
+    logActivity(`Created family invitation for ${data.invitee_email}`, 'Just now • Invitations', '✉️');
+    loadFamilyInvitations();
+  } catch (err) {
+    alert(`Failed to create invitation: ${err.message}`);
+  }
+}
+
+/**
+ * Load Active Family Circle Invitations
+ */
+async function loadFamilyInvitations() {
+  const tbody = document.getElementById('pending-invitations-table-body');
+  if (!tbody || !appState.activeToken) return;
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/family/invitations`, {
+      headers: {
+        'Authorization': `Bearer ${appState.activeToken}`,
+      },
+    });
+
+    if (!res.ok) return;
+    const invitations = await res.json();
+    if (!Array.isArray(invitations) || invitations.length === 0) {
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--color-navy-500); padding: 1.5rem;">No pending invitations. Click "+ New Invitation" above to invite family members.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = invitations
+      .map(
+        (inv) => `
+        <tr>
+          <td><strong>${escapeHTML(inv.invitee_email)}</strong></td>
+          <td>${escapeHTML(inv.role.replace('_', ' '))}</td>
+          <td>${escapeHTML(inv.relationship || 'Family Member')}</td>
+          <td><span class="invitation-badge ${inv.status}">${inv.status === 'pending' ? '⏳ Pending' : inv.status}</span></td>
+          <td>
+            <button class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText('${inv.invitation_link}'); showNotificationToast('Invitation link copied!');">Copy Link</button>
+            <button class="btn btn-sm btn-outline" style="color: var(--color-error); margin-left: 0.25rem;" onclick="cancelFamilyInvitation('${inv.invitation_id}')">Cancel</button>
+          </td>
+        </tr>
+      `
+      )
+      .join('');
+  } catch (err) {
+    console.warn('Could not load family invitations:', err);
+  }
+}
+
+/**
+ * Cancel an Invitation
+ */
+async function cancelFamilyInvitation(invitationId) {
+  if (!confirm('Are you sure you want to cancel this pending invitation?')) return;
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/family/invitations/${invitationId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${appState.activeToken}`,
+      },
+    });
+    if (res.ok) {
+      showNotificationToast('Invitation cancelled.');
+      loadFamilyInvitations();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      alert(`Could not cancel invitation: ${err?.detail || 'Permission denied'}`);
+    }
+  } catch (err) {
+    alert(`Error: ${err.message}`);
+  }
+}
+
+/**
+ * Handle Floating AI Drawer Chat Submission
+ */
+async function handleDrawerChatSubmit(e) {
+  if (e) e.preventDefault();
+  const input = document.getElementById('drawer-chat-input');
+  const messagesContainer = document.getElementById('drawer-chat-messages');
+  if (!input || !messagesContainer) return;
+
+  const userQuery = input.value.trim();
+  if (!userQuery) return;
+
+  // Append user message
+  const userHtml = `
+    <div class="ai-msg user" style="align-self: flex-end; background: var(--color-teal-600); color: white; padding: 0.6rem 0.85rem; border-radius: var(--radius-md); max-width: 85%; font-size: 0.85rem; margin-bottom: 0.5rem;">
+      ${escapeHTML(userQuery)}
+    </div>
+  `;
+  messagesContainer.insertAdjacentHTML('beforeend', userHtml);
+  input.value = '';
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  // Append thinking bubble
+  const typingId = `drawer-typing-${Date.now()}`;
+  const typingHtml = `
+    <div class="ai-msg bot" id="${typingId}" style="align-self: flex-start; background: var(--color-surface); border: 1px solid var(--color-border); padding: 0.6rem 0.85rem; border-radius: var(--radius-md); max-width: 85%; font-size: 0.85rem; margin-bottom: 0.5rem;">
+      <span style="display: inline-flex; align-items: center; gap: 0.4rem; color: var(--color-teal-700);">
+        <span>✨</span> <em>CareSaathi AI is thinking...</em>
+      </span>
+    </div>
+  `;
+  messagesContainer.insertAdjacentHTML('beforeend', typingHtml);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/ai/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${appState.activeToken}`,
+      },
+      body: JSON.stringify({ message: userQuery }),
+    });
+
+    const data = await res.json();
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+
+    const responseText = data.response || 'I am ready to assist with your family health schedules.';
+    const botHtml = `
+      <div class="ai-msg bot" style="align-self: flex-start; background: var(--color-surface); border: 1px solid var(--color-border); padding: 0.65rem 0.85rem; border-radius: var(--radius-md); max-width: 88%; font-size: 0.85rem; line-height: 1.5; margin-bottom: 0.5rem;">
+        <div style="font-weight: 700; color: var(--color-teal-700); font-size: 0.75rem; margin-bottom: 0.25rem;">✨ CareSaathi AI</div>
+        <div>${escapeHTML(responseText)}</div>
+        <div style="font-size: 0.7rem; color: var(--color-navy-500); margin-top: 0.35rem; border-top: 1px solid var(--color-border); padding-top: 0.25rem;">
+          <em>${escapeHTML(data.disclaimer || 'Informational only')}</em>
+        </div>
+      </div>
+    `;
+    messagesContainer.insertAdjacentHTML('beforeend', botHtml);
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+
+    // Synchronize to full AI assistant view if open
+    if (dom.aiChatMessages) {
+      if (dom.aiEmptyState) dom.aiEmptyState.style.display = 'none';
+      dom.aiChatMessages.insertAdjacentHTML(
+        'beforeend',
+        `
+        <div class="chat-message user">
+          <div class="message-content"><p>${escapeHTML(userQuery)}</p></div>
+        </div>
+        <div class="chat-message bot">
+          <div class="message-content">
+            <p>${escapeHTML(responseText)}</p>
+            <div class="ai-safety-disclaimer">ℹ️ ${escapeHTML(data.disclaimer || 'Informational only')}</div>
+          </div>
+        </div>
+      `
+      );
+      dom.aiChatMessages.scrollTop = dom.aiChatMessages.scrollHeight;
+    }
+  } catch (err) {
+    const typingEl = document.getElementById(typingId);
+    if (typingEl) typingEl.remove();
+    messagesContainer.insertAdjacentHTML(
+      'beforeend',
+      `<div class="ai-msg bot" style="color: var(--color-error); font-size: 0.8rem;">CareSaathi AI could not be reached: ${escapeHTML(err.message)}</div>`
+    );
+  }
+}
+
+/**
+ * Filter Member in Health Center Spotlight
+ */
+function filterHealthCenterMember(memberKey) {
+  const memberData = {
+    ramesh: {
+      name: 'Ramesh Sharma',
+      age: '74 yrs',
+      bp: '128/82 mmHg',
+      glucose: '114 mg/dL',
+      note: 'Ramesh is adhering consistently to his morning Amlodipine regimen. Doctor Mehta has scheduled an echocardiogram review for tomorrow morning at Apollo Heart Center.',
+    },
+    sunita: {
+      name: 'Sunita Sharma',
+      age: '48 yrs',
+      bp: '118/76 mmHg',
+      glucose: '98 mg/dL',
+      note: 'Morning Levothyroxine taken on empty stomach. Thyroid panel check scheduled for next month.',
+    },
+    anil: {
+      name: 'Anil Sharma',
+      age: '50 yrs',
+      bp: '122/80 mmHg',
+      glucose: '102 mg/dL',
+      note: 'Executive wellness profile up to date. Acting as primary care coordinator and escort for Ramesh.',
+    },
+    ananya: {
+      name: 'Ananya Sharma',
+      age: '17 yrs',
+      bp: '110/70 mmHg',
+      glucose: '92 mg/dL',
+      note: 'Annual vision exam scheduled with Dr. Radhika Iyer. Immunizations fully up to date.',
+    },
+  };
+
+  const d = memberData[memberKey] || memberData['ramesh'];
+  const bpEl = document.getElementById('hc-bp-val');
+  const glEl = document.getElementById('hc-glucose-val');
+  const noteEl = document.getElementById('hc-care-note');
+
+  if (bpEl) bpEl.innerHTML = `${d.bp} <span style="font-size: 0.75rem; color: var(--color-success-text);">(Stable)</span>`;
+  if (glEl) glEl.innerHTML = `${d.glucose} <span style="font-size: 0.75rem; color: var(--color-navy-500);">(Normal)</span>`;
+  if (noteEl) noteEl.textContent = d.note;
+}
+
+/**
  * Handle Google OAuth Redirect Return Parameters
  */
 function handleOAuthRedirectCallback() {
   const url = new URL(window.location.href);
   const searchParams = url.searchParams;
 
-  // Also check hash query params if any
   let hashParams = new URLSearchParams();
   if (url.hash && url.hash.includes('?')) {
     hashParams = new URLSearchParams(url.hash.split('?')[1]);
@@ -2603,11 +3233,11 @@ function handleOAuthRedirectCallback() {
     const email = searchParams.get('email') || hashParams.get('email');
     const userId = searchParams.get('user_id') || hashParams.get('user_id');
     const fullName = searchParams.get('name') || hashParams.get('name') || email;
-    const role = searchParams.get('role') || hashParams.get('role') || 'adult_member';
+    const role = searchParams.get('role') || hashParams.get('role') || 'family_owner';
 
     if (token) {
       const googleUser = {
-        label: `${fullName} (Google: ${role.replace('_', ' ')})`,
+        label: `${fullName} (Google)`,
         user_id: userId,
         email: email,
         role: role,
@@ -2615,114 +3245,40 @@ function handleOAuthRedirectCallback() {
         token: token,
       };
 
-      // Add to demoTokens array so role-selector includes the user
-      const existingIdx = appState.demoTokens.findIndex((u) => u.user_id === userId);
-      if (existingIdx >= 0) {
-        appState.demoTokens[existingIdx] = googleUser;
-      } else {
-        appState.demoTokens.unshift(googleUser);
-      }
-      populateRoleSelector(appState.demoTokens);
-
-      // Apply User Session
-      applyUserSession(googleUser);
-
-      // Persist Google Session in sessionStorage
+      // Persist session in sessionStorage and localStorage
+      sessionStorage.setItem('careSaathi_token', token);
+      sessionStorage.setItem('careSaathi_user', JSON.stringify(googleUser));
       sessionStorage.setItem('caresaathi_google_session', JSON.stringify(googleUser));
 
-      logActivity(`Authenticated via Google OAuth (${email})`, 'Just now • Google Identity', '🌐');
-      alert(`🎉 Google OAuth Successful!\n\nWelcome, ${fullName}!\nLinked Account: ${email}\nCareSaathi session activated with role: ${role}.`);
+      applyUserSession(googleUser);
+      revealAppShell();
 
-      // Clean the URL without reloading
-      window.history.replaceState(null, '', window.location.pathname + '#settings');
-      updateGoogleAuthUI();
-      fetchAPIIntegrationsStatus();
+      // Clean the URL to #dashboard
+      window.history.replaceState(null, '', window.location.pathname + '#dashboard');
+      switchView('dashboard');
+      showNotificationToast(`🎉 Welcome to CareSaathi, ${fullName}!`);
+      logActivity(`Authenticated via Google OAuth (${email})`, 'Just now • Google Identity', '🌐');
+      return true;
     }
   } else if (oauthError) {
     const errorDescriptions = {
-      access_denied: 'You cancelled the Google sign-in consent request.',
+      access_denied: 'Google OAuth Access Denied: Google Cloud is currently in Testing Mode. If you are an evaluator, your email address needs to be added to Test Users in Google Cloud Console, or you can use instant demo sign-in.',
       invalid_csrf_state: 'Security verification failed (invalid CSRF state). Please try again.',
       missing_code: 'Google did not return an authorization code.',
       token_exchange_failed: 'Failed to exchange authorization code with Google OAuth servers.',
       no_email_returned: 'Your Google profile did not share an email address.',
     };
     const desc = errorDescriptions[oauthError] || oauthError;
-    alert(`Google Authentication Notice: ${desc}`);
-    window.history.replaceState(null, '', window.location.pathname + '#settings');
+    alert(`Google Authentication: ${desc}`);
+    window.history.replaceState(null, '', window.location.pathname + '#login');
+    showLoginScreen();
+    return false;
   }
-}
-
-/**
- * Update Google OAuth UI Card and Profile Buttons
- */
-function updateGoogleAuthUI() {
-  const loginBtn = document.getElementById('google-login-btn');
-  const logoutBtn = document.getElementById('google-logout-btn');
-  const statusBadge = document.getElementById('integ-status-google-oauth');
-  const descText = document.getElementById('integ-desc-google-oauth');
-
-  const isGoogleUser = appState.currentUser && (
-    (appState.currentUser.user_id && appState.currentUser.user_id.startsWith('user_google_')) ||
-    (appState.currentUser.label && appState.currentUser.label.includes('Google:')) ||
-    (sessionStorage.getItem('caresaathi_google_session') !== null)
-  );
-
-  if (isGoogleUser && logoutBtn) {
-    logoutBtn.style.display = 'inline-flex';
-    if (loginBtn) {
-      loginBtn.innerHTML = `<span>🔄 Switch Google Account</span>`;
-    }
-    if (statusBadge) {
-      statusBadge.textContent = 'Signed In ✅';
-      statusBadge.className = 'badge badge-routine';
-    }
-    if (descText && appState.currentUser && appState.currentUser.email) {
-      descText.textContent = `Signed in as ${appState.currentUser.email}. Linked to Sharma Family Care Circle.`;
-    }
-  } else {
-    if (logoutBtn) logoutBtn.style.display = 'none';
-    if (loginBtn) {
-      loginBtn.innerHTML = `<span>🌐 Sign in with Google</span>`;
-    }
-  }
-}
-
-/**
- * Sign out of Google Session
- */
-async function logoutGoogleUser() {
-  if (appState.activeToken) {
-    try {
-      await fetch(`${CONFIG.API_BASE_URL}/api/auth/logout`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${appState.activeToken}`,
-        },
-      });
-    } catch (e) {
-      console.warn('Backend logout call failed:', e);
-    }
-  }
-  sessionStorage.removeItem('caresaathi_google_session');
-
-  // Remove google user from demoTokens
-  appState.demoTokens = appState.demoTokens.filter((u) => !u.user_id.startsWith('user_google_'));
-  populateRoleSelector(appState.demoTokens);
-
-  // Switch to default Anil Sharma
-  const defaultUser = appState.demoTokens.find((u) => u.user_id === 'user_anil_01') || appState.demoTokens[0];
-  if (defaultUser) {
-    applyUserSession(defaultUser);
-  }
-  updateGoogleAuthUI();
-  alert('You have been signed out of your Google session. Reverted to Anil Sharma (Family Owner).');
-  logActivity('Signed out of Google session', 'Just now • Auth', '🔒');
-  fetchAPIIntegrationsStatus();
+  return false;
 }
 
 /**
  * Handle Direct Email & Password Sign In
- * @param {Event} e
  */
 async function handleEmailLogin(e) {
   if (e) e.preventDefault();
@@ -2755,17 +3311,13 @@ async function handleEmailLogin(e) {
       token: data.access_token,
     };
 
-    // Update demo tokens dropdown if not present
-    const existingIdx = appState.demoTokens.findIndex((u) => u.user_id === authUser.user_id);
-    if (existingIdx >= 0) {
-      appState.demoTokens[existingIdx] = authUser;
-    } else {
-      appState.demoTokens.unshift(authUser);
-    }
-    populateRoleSelector(appState.demoTokens);
+    sessionStorage.setItem('careSaathi_token', data.access_token);
+    sessionStorage.setItem('careSaathi_user', JSON.stringify(authUser));
 
     applyUserSession(authUser);
-    alert(`🎉 Signed in successfully as ${data.user.full_name} (${data.user.email})!`);
+    revealAppShell();
+    switchView('dashboard');
+    showNotificationToast(`Signed in as ${data.user.full_name}!`);
     logActivity(`Signed in with email (${data.user.email})`, 'Just now • Auth', '🔑');
   } catch (err) {
     alert(`Login error: ${err.message}`);
@@ -2773,7 +3325,61 @@ async function handleEmailLogin(e) {
 }
 
 /**
- * Initialize Application
+ * Handle Direct Email & Password Registration
+ */
+async function handleEmailSignup(e) {
+  if (e) e.preventDefault();
+  const fullNameInp = document.getElementById('signup-fullname');
+  const emailInp = document.getElementById('signup-email');
+  const passwordInp = document.getElementById('signup-password');
+  const familyInp = document.getElementById('signup-family');
+
+  if (!fullNameInp || !emailInp || !passwordInp) return;
+
+  const payload = {
+    full_name: fullNameInp.value.trim(),
+    email: emailInp.value.trim(),
+    password: passwordInp.value,
+    family_name: familyInp ? familyInp.value.trim() : 'Family Care Circle',
+  };
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      alert(`Signup failed: ${data?.error?.message || data?.detail || 'Registration error'}`);
+      return;
+    }
+
+    const authUser = {
+      label: `${data.user.full_name} (Family Owner)`,
+      user_id: data.user.user_id,
+      email: data.user.email,
+      role: data.user.role,
+      family_id: data.user.family_id,
+      token: data.access_token,
+    };
+
+    sessionStorage.setItem('careSaathi_token', data.access_token);
+    sessionStorage.setItem('careSaathi_user', JSON.stringify(authUser));
+
+    applyUserSession(authUser);
+    revealAppShell();
+    switchView('dashboard');
+    showNotificationToast(`Welcome to CareSaathi, ${data.user.full_name}!`);
+    logActivity(`Registered new family account (${data.user.email})`, 'Just now • Auth', '🎉');
+  } catch (err) {
+    alert(`Registration error: ${err.message}`);
+  }
+}
+
+/**
+ * Initialize Application (Strict Login-First Flow)
  */
 document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
@@ -2783,23 +3389,52 @@ document.addEventListener('DOMContentLoaded', () => {
   initPrivacyMode();
 
   // Check for Google OAuth callback parameters
-  handleOAuthRedirectCallback();
+  const handledOAuth = handleOAuthRedirectCallback();
 
-  // Load Demo Authentication Tokens and Family Profiles
-  fetchDemoTokens();
+  // Enforce Login-First Flow: Verify Session Token
+  const savedToken = sessionStorage.getItem('careSaathi_token') || localStorage.getItem('careSaathi_token');
+  const savedUserJson = sessionStorage.getItem('careSaathi_user') || localStorage.getItem('careSaathi_user');
 
-  // Fetch Live Status of External API Integrations
-  fetchAPIIntegrationsStatus();
+  if (savedToken && savedUserJson) {
+    try {
+      const user = JSON.parse(savedUserJson);
+      user.token = savedToken;
+      applyUserSession(user);
+      revealAppShell();
 
-  // Route to initial view based on URL hash
-  const initialHash = window.location.hash.replace('#', '');
-  if (initialHash && document.getElementById(`view-${initialHash}`)) {
-    switchView(initialHash);
-  } else {
-    switchView('dashboard');
+      // Route to initial view based on URL hash
+      const initialHash = window.location.hash.replace('#', '');
+      if (initialHash && initialHash !== 'login' && document.getElementById(`view-${initialHash}`)) {
+        switchView(initialHash);
+      } else {
+        switchView('dashboard');
+      }
+    } catch {
+      showLoginScreen();
+    }
+  } else if (!handledOAuth) {
+    showLoginScreen();
   }
 
-  // Initial backend health check and periodic polling
+  // Navigation Guard: Prevent unauthenticated users from seeing views via back button
+  window.addEventListener('hashchange', () => {
+    const token = sessionStorage.getItem('careSaathi_token') || localStorage.getItem('careSaathi_token');
+    if (!token && window.location.hash !== '#login') {
+      showLoginScreen();
+    }
+  });
+
+  window.addEventListener('popstate', () => {
+    const token = sessionStorage.getItem('careSaathi_token') || localStorage.getItem('careSaathi_token');
+    if (!token && window.location.hash !== '#login') {
+      showLoginScreen();
+    }
+  });
+
+  // Load supporting background states
+  fetchDemoTokens();
+  fetchAPIIntegrationsStatus();
+  loadFamilyInvitations();
   pingBackendHealth();
   setInterval(pingBackendHealth, CONFIG.POLL_INTERVAL_MS);
 });

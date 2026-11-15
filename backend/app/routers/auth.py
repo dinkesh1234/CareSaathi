@@ -165,17 +165,17 @@ async def google_auth_callback(
     """Handle Google OAuth 2.0 callback, exchange code for tokens, and create or login user."""
     # 1. Handle error returned by Google consent page (e.g. user cancelled)
     if error:
-        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error={urllib.parse.quote(error)}#settings"
+        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error={urllib.parse.quote(error)}#login"
         return RedirectResponse(url=redirect_target)
 
     # 2. Validate CSRF state token
     if not state or not google_oauth_service.validate_and_consume_state(state):
-        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=invalid_csrf_state#settings"
+        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=invalid_csrf_state#login"
         return RedirectResponse(url=redirect_target)
 
     # 3. Check code parameter
     if not code:
-        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=missing_code#settings"
+        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=missing_code#login"
         return RedirectResponse(url=redirect_target)
 
     # 4. Exchange authorization code for tokens and fetch user profile
@@ -183,41 +183,72 @@ async def google_auth_callback(
         token_data = await google_oauth_service.exchange_code_for_tokens(code)
         access_token = token_data.get("access_token")
         if not access_token:
-            redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=token_exchange_failed#settings"
+            redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=token_exchange_failed#login"
             return RedirectResponse(url=redirect_target)
 
         profile = await google_oauth_service.get_user_profile(access_token)
     except Exception:
-        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=token_exchange_failed#settings"
+        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=token_exchange_failed#login"
         return RedirectResponse(url=redirect_target)
 
     email = profile.get("email")
     if not email:
-        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=no_email_returned#settings"
+        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=no_email_returned#login"
         return RedirectResponse(url=redirect_target)
 
     full_name = profile.get("name") or profile.get("given_name") or email.split("@")[0]
 
-    # 5. Match existing user by email, or create new user under Sharma family account
+    # 5. Check if user already exists or create new account
     existing_user = repository.get_user_by_email(email)
     if not existing_user:
-        import secrets
         pw_hash, salt = hash_password(secrets.token_urlsafe(32))
         google_id = str(profile.get("id") or profile.get("sub") or secrets.token_hex(4))
         user_id = f"user_google_{google_id[:8]}"
         if repository.get_user_by_id(user_id):
             user_id = f"user_google_{secrets.token_hex(4)}"
 
+        # Check for pending invitation matching this email
+        pending_inv = None
+        for inv in repository.invitations.values():
+            if inv.invitee_email.lower().strip() == email.lower().strip() and inv.status.value == "pending":
+                pending_inv = inv
+                break
+
+        if pending_inv:
+            family_id = pending_inv.family_id
+            role = pending_inv.role
+            pending_inv.status = "accepted"
+        else:
+            family_id = f"fam_{secrets.token_hex(6)}"
+            role = Role.FAMILY_OWNER
+
         existing_user = AuthenticatedUser(
             user_id=user_id,
             email=email,
             full_name=full_name,
-            family_id="fam_sharma_101",
-            role=Role.ADULT_MEMBER,
+            family_id=family_id,
+            role=role,
             password_hash=pw_hash,
             salt=salt,
         )
         repository.users[existing_user.user_id] = existing_user
+
+        # Create primary profile for this user
+        repository.create_profile(
+            family_id=family_id,
+            full_name=full_name,
+            age=65,
+            relationship="Self / Account Holder",
+            guardian_user_ids=[existing_user.user_id],
+            care_notes="Primary family coordinator account",
+        )
+        repository.record_activity(
+            family_id=family_id,
+            icon="🎉",
+            title="Care circle created",
+            subtitle=f"{full_name} established a new CareSaathi family care circle.",
+            actor_name=full_name,
+        )
 
     # 6. Store OAuth tokens on server for Calendar operations
     google_oauth_service.store_user_tokens(existing_user.user_id, token_data, email)
@@ -233,7 +264,7 @@ async def google_auth_callback(
         f"&email={urllib.parse.quote(email)}"
         f"&name={urllib.parse.quote(existing_user.full_name)}"
         f"&role={existing_user.role.value}"
-        f"#settings"
+        f"#dashboard"
     )
     return RedirectResponse(url=redirect_target)
 
@@ -246,4 +277,4 @@ async def logout(
     """Log out current user, revoke active session token, and clear OAuth tokens."""
     invalidate_token(token)
     google_oauth_service.clear_user_tokens(user_id)
-    return {"status": "logged_out", "message": "Session invalidated successfully."}
+    return {"status": "logged_out", "message": "You have been logged out successfully."}

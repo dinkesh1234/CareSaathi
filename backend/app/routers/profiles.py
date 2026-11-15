@@ -123,7 +123,7 @@ async def delete_profile(profile_id: str, user_id: str = Depends(get_current_use
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Family member profile not found.")
 
     enforce_profile_delete_access(user, profile)
-    repository.delete_profile(profile_id)
+    repository.delete_profile(profile_id, user.family_id)
     return {"success": True, "message": f"Profile '{profile.full_name}' deleted successfully."}
 
 
@@ -173,3 +173,21 @@ async def revoke_caregiver(
     assigned = [cid for cid in profile.assigned_caregiver_ids if cid != req.caregiver_user_id]
     updated = repository.update_profile(profile_id, {"assigned_caregiver_ids": assigned})
     return updated
+
+
+@router.delete("/{profile_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_profile(
+    profile_id: str,
+    user_id: str = Depends(get_current_user_id),
+):
+    """Delete a family member profile (Restricted to Family Owner & Permitted Guardians)."""
+    user = _resolve_authenticated_user(user_id)
+    profile = repository.get_profile_by_id(profile_id)
+    if not profile or profile.family_id != user.family_id:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Family member profile not found.")
+
+    enforce_profile_delete_access(user, profile)
+    success = repository.delete_profile(profile_id, user.family_id)
+    if not success:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Profile not found or already deleted.")
+

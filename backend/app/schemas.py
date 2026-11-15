@@ -352,3 +352,39 @@ class AICapabilitiesResponse(BaseModel):
     capabilities: List[str]
     disclaimer: str
 
+
+# ==============================================================================
+# Family Invitation Schemas
+# ==============================================================================
+class InvitationStatus(str, Enum):
+    PENDING = "pending"
+    ACCEPTED = "accepted"
+    EXPIRED = "expired"
+    CANCELLED = "cancelled"
+
+
+class InvitationCreateRequest(BaseModel):
+    """Payload to invite a family member or caregiver via email."""
+    invitee_email: str = Field(..., pattern=r"^[^@\s]+@[^@\s]+\.[^@\s]+$", description="Valid email address")
+    role: Role = Role.ADULT_MEMBER
+    target_profile_id: Optional[str] = None
+    relationship: Optional[str] = Field(default="Family Member", max_length=50)
+
+
+class FamilyInvitation(BaseModel):
+    """Schema for a family circle invitation."""
+    invitation_id: str
+    family_id: str
+    family_name: str
+    invited_by_user_id: str
+    invited_by_name: str
+    invitee_email: str
+    role: Role
+    token: str
+    status: InvitationStatus = InvitationStatus.PENDING
+    target_profile_id: Optional[str] = None
+    relationship: str = "Family Member"
+    expires_at: str
+    created_at: str
+    invitation_link: str
+

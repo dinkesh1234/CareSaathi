@@ -199,6 +199,34 @@ class ResendService:
         html_body = self._wrap_html_template("Care Continuity Update", content, "View Care Continuity Log")
         return await self._dispatch_email(to_email, subject, html_body)
 
+    async def send_invitation_email(
+        self,
+        to_email: str,
+        inviter_name: str,
+        family_name: str,
+        invitation_link: str,
+        role: str,
+    ) -> Dict[str, Any]:
+        """Send an invitation email to join a CareSaathi family care circle."""
+        subject = f"CareSaathi Invitation: Join the {family_name}"
+        role_label = role.replace("_", " ").title()
+        content = f"""
+          <p style="font-size: 15px; color: #1e293b;">Hello,</p>
+          <p style="font-size: 15px; color: #334155; line-height: 1.6;">
+            <strong>{inviter_name}</strong> has invited you to join the <strong>{family_name}</strong> on <strong>CareSaathi</strong> as a <strong>{role_label}</strong>.
+          </p>
+          <p style="font-size: 14px; color: #475569; line-height: 1.5;">
+            CareSaathi helps families coordinate senior health, medications, and caregiver handoffs in one private, secure platform.
+          </p>
+        """
+        html = self._wrap_html_template(
+            title="Family Care Circle Invitation",
+            content_html=content,
+            action_text="Accept Invitation & Sign In",
+            action_url=invitation_link,
+        )
+        return await self._dispatch_email(to_email=to_email, subject=subject, html=html)
+
     async def _dispatch_email(self, to_email: str, subject: str, html: str) -> Dict[str, Any]:
         """Send the email payload via Resend API."""
         if not self.is_configured:
