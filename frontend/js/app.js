@@ -188,6 +188,8 @@ function showNotificationToast(msg, durationMs = 3500) {
   if (!toast) {
     toast = document.createElement('div');
     toast.id = 'care-saathi-toast';
+    toast.setAttribute('role', 'status');
+    toast.setAttribute('aria-live', 'polite');
     toast.style.cssText = `
       position: fixed;
       bottom: 24px;
@@ -481,6 +483,11 @@ async function handleEmailSignup(e) {
 
   if (!fullName || !email || !password) {
     alert('Please complete all required fields.');
+    return;
+  }
+
+  if (password.length < 8) {
+    alert('Password must be at least 8 characters long for secure account protection.');
     return;
   }
 
@@ -1117,6 +1124,109 @@ function renderSelectedDateAppointments(dateStr) {
     .join('');
 }
 
+function handleGlobalSearch(query) {
+  const clean = (query || '').trim().toLowerCase();
+
+  if (!clean) {
+    // Restore all full views
+    renderDashboardMedications(appState.medications);
+    renderDashboardAppointments(appState.appointments);
+    renderFullMedicationsList(appState.medications);
+    renderFamilyMembersGrid(appState.familyProfiles);
+    renderSelectedDateAppointments(appState.calendar.selectedDateStr);
+    return;
+  }
+
+  // 1. Dashboard filtering
+  if (dom.dashboardMedTimeline) {
+    const matchedMeds = (appState.medications || []).filter(
+      (m) =>
+        (m.name && m.name.toLowerCase().includes(clean)) ||
+        (m.dosage && m.dosage.toLowerCase().includes(clean)) ||
+        (m.patient_name && m.patient_name.toLowerCase().includes(clean)) ||
+        (m.instructions && m.instructions.toLowerCase().includes(clean))
+    );
+    renderDashboardMedications(matchedMeds);
+  }
+
+  if (dom.dashboardAppointmentsList) {
+    const matchedApts = (appState.appointments || []).filter(
+      (a) =>
+        (a.doctor_name && a.doctor_name.toLowerCase().includes(clean)) ||
+        (a.specialty && a.specialty.toLowerCase().includes(clean)) ||
+        (a.patient_name && a.patient_name.toLowerCase().includes(clean)) ||
+        (a.location && a.location.toLowerCase().includes(clean))
+    );
+    renderDashboardAppointments(matchedApts);
+  }
+
+  // 2. Full Medications View
+  if (dom.medicationsFullList) {
+    const matchedMeds = (appState.medications || []).filter(
+      (m) =>
+        (m.name && m.name.toLowerCase().includes(clean)) ||
+        (m.dosage && m.dosage.toLowerCase().includes(clean)) ||
+        (m.patient_name && m.patient_name.toLowerCase().includes(clean)) ||
+        (m.instructions && m.instructions.toLowerCase().includes(clean))
+    );
+    renderFullMedicationsList(matchedMeds);
+  }
+
+  // 3. Family Members View
+  if (dom.familyMembersGrid) {
+    const matchedProfiles = (appState.familyProfiles || []).filter(
+      (p) =>
+        (p.full_name && p.full_name.toLowerCase().includes(clean)) ||
+        (p.relationship && p.relationship.toLowerCase().includes(clean)) ||
+        (p.blood_group && p.blood_group.toLowerCase().includes(clean)) ||
+        (p.care_notes && p.care_notes.toLowerCase().includes(clean))
+    );
+    renderFamilyMembersGrid(matchedProfiles);
+  }
+
+  // 4. Appointments View
+  if (dom.selectedDateAptsContainer) {
+    const matchedApts = (appState.appointments || []).filter(
+      (a) =>
+        (a.doctor_name && a.doctor_name.toLowerCase().includes(clean)) ||
+        (a.specialty && a.specialty.toLowerCase().includes(clean)) ||
+        (a.patient_name && a.patient_name.toLowerCase().includes(clean)) ||
+        (a.location && a.location.toLowerCase().includes(clean))
+    );
+    if (matchedApts.length === 0) {
+      dom.selectedDateAptsContainer.innerHTML = `
+        <div style="text-align: center; padding: 2rem 1rem; border: 1px dashed #E5E7EB; border-radius: 8px;">
+          <p style="font-size: 0.85rem; color: #64748B;">No consultations matching "<strong>${escapeHTML(clean)}</strong>".</p>
+        </div>
+      `;
+    } else {
+      dom.selectedDateAptsContainer.innerHTML = matchedApts
+        .map((apt) => {
+          const hasEscort = !!apt.escort_name;
+          return `
+            <div style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 8px; padding: 1rem; margin-bottom: 0.85rem;">
+              <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.35rem;">
+                <div>
+                  <h4 style="font-size: 0.95rem; font-weight: 700; color: #111827; margin: 0;">${escapeHTML(apt.specialty)}</h4>
+                  <div style="font-size: 0.8rem; color: #0F766E; font-weight: 600;">${escapeHTML(apt.doctor_name)}</div>
+                </div>
+                <span class="badge ${hasEscort ? 'badge-teal' : 'badge-warning'}" style="font-size: 0.7rem;">
+                  ${hasEscort ? `Escort: ${escapeHTML(apt.escort_name)}` : 'Escort Needed'}
+                </span>
+              </div>
+              <div style="font-size: 0.775rem; color: #64748B; line-height: 1.5; margin-bottom: 0.5rem;">
+                <div>Patient: <strong>${escapeHTML(apt.patient_name)}</strong></div>
+                <div>Date & Time: <strong>${escapeHTML(apt.appointment_date)}</strong></div>
+                <div>Location: ${escapeHTML(apt.location || 'Clinic')}</div>
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+    }
+  }
+}
+
 window.openAptModalWithDate = function (dateStr) {
   const modal = document.getElementById('schedule-apt-modal');
   const dateInput = document.getElementById('modal-apt-date');
@@ -1286,6 +1396,14 @@ async function sendAIMessage(queryText) {
 // --- Modals & Modal Form Handling ---
 
 function setupModals() {
+  // Close on Escape key press (WCAG 2.1 compliance)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const activeModal = document.querySelector('.modal-overlay.active');
+      if (activeModal) activeModal.classList.remove('active');
+    }
+  });
+
   document.querySelectorAll('[data-close-modal]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const modalId = btn.dataset.closeModal;
@@ -1652,6 +1770,13 @@ function setupEventListeners() {
   // Quick Demo Button
   if (dom.quickDemoBtn) {
     dom.quickDemoBtn.addEventListener('click', () => selectDemoAccount('user_anil_01'));
+  }
+
+  // Global Real-Time Search Bar
+  if (dom.globalSearchInput) {
+    dom.globalSearchInput.addEventListener('input', (e) => {
+      handleGlobalSearch(e.target.value);
+    });
   }
 
   // Topbar Profile Pill Dropdown
