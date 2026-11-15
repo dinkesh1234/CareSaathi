@@ -110,51 +110,83 @@ async def google_auth_callback(
     request: Request = None,
 ):
     """Handle Google OAuth 2.0 callback, exchange code for tokens, and create or login user."""
+    # 1. Handle error returned by Google consent page (e.g. user cancelled)
     if error:
-        redirect_target = f"{settings.FRONTEND_ORIGIN}/#settings?oauth_error={error}"
+        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error={urllib.parse.quote(error)}#settings"
         return RedirectResponse(url=redirect_target)
 
-    if not code:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing authorization code.")
+    # 2. Validate CSRF state token
+    if not state or not google_oauth_service.validate_and_consume_state(state):
+        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=invalid_csrf_state#settings"
+        return RedirectResponse(url=redirect_target)
 
+    # 3. Check code parameter
+    if not code:
+        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=missing_code#settings"
+        return RedirectResponse(url=redirect_target)
+
+    # 4. Exchange authorization code for tokens and fetch user profile
     try:
         token_data = await google_oauth_service.exchange_code_for_tokens(code)
         access_token = token_data.get("access_token")
+        if not access_token:
+            redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=token_exchange_failed#settings"
+            return RedirectResponse(url=redirect_target)
+
         profile = await google_oauth_service.get_user_profile(access_token)
-    except Exception as err:
-        redirect_target = f"{settings.FRONTEND_ORIGIN}/#settings?oauth_error=token_exchange_failed"
+    except Exception:
+        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=token_exchange_failed#settings"
         return RedirectResponse(url=redirect_target)
 
     email = profile.get("email")
-    full_name = profile.get("name", "Google User")
+    if not email:
+        redirect_target = f"{settings.FRONTEND_ORIGIN}/?oauth_error=no_email_returned#settings"
+        return RedirectResponse(url=redirect_target)
 
-    # Match existing user by email, or create new user under a demo family account
+    full_name = profile.get("name") or profile.get("given_name") or email.split("@")[0]
+
+    # 5. Match existing user by email, or create new user under Sharma family account
     existing_user = repository.get_user_by_email(email)
     if not existing_user:
-        # Create user with adult_member role under Sharma family for seamless testing
-        pw_hash, salt = hash_password("GoogleAuthUser123!")
+        import secrets
+        pw_hash, salt = hash_password(secrets.token_urlsafe(32))
+        google_id = str(profile.get("id") or profile.get("sub") or secrets.token_hex(4))
+        user_id = f"user_google_{google_id[:8]}"
+        if repository.get_user_by_id(user_id):
+            user_id = f"user_google_{secrets.token_hex(4)}"
+
         existing_user = AuthenticatedUser(
-            user_id=f"user_google_{profile.get('id', 'ext')[:8]}",
+            user_id=user_id,
             email=email,
             full_name=full_name,
-            family_id="fam_sharma_01",
+            family_id="fam_sharma_101",
             role=Role.ADULT_MEMBER,
             password_hash=pw_hash,
             salt=salt,
         )
         repository.users[existing_user.user_id] = existing_user
 
-    # Store OAuth tokens on server for Calendar operations
+    # 6. Store OAuth tokens on server for Calendar operations
     google_oauth_service.store_user_tokens(existing_user.user_id, token_data, email)
 
-    # Issue CareSaathi session Bearer token
+    # 7. Issue CareSaathi session Bearer token
     session_token = create_access_token(existing_user.user_id)
 
-    # Redirect to frontend settings with success token
+    # 8. Redirect to frontend with success token and user parameters
     redirect_target = (
-        f"{settings.FRONTEND_ORIGIN}/#settings?oauth=success"
+        f"{settings.FRONTEND_ORIGIN}/?oauth=success"
         f"&token={session_token}"
         f"&user_id={existing_user.user_id}"
         f"&email={urllib.parse.quote(email)}"
+        f"&name={urllib.parse.quote(existing_user.full_name)}"
+        f"&role={existing_user.role.value}"
+        f"#settings"
     )
     return RedirectResponse(url=redirect_target)
+
+
+@router.post("/logout")
+async def logout(user_id: str = Depends(get_current_user_id)):
+    """Log out current user and clear server-side OAuth tokens if any."""
+    google_oauth_service.clear_user_tokens(user_id)
+    return {"status": "logged_out", "message": "Session invalidated successfully."}

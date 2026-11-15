@@ -5,6 +5,7 @@ exchange of authorization codes for access and refresh tokens, user profile retr
 and secure server-side token storage.
 """
 
+import time
 from typing import Any, Dict, Optional
 import urllib.parse
 import secrets
@@ -49,7 +50,7 @@ class GoogleOAuthService:
             raise ValueError("Google OAuth credentials are not configured in backend/.env")
 
         state = return_state or secrets.token_urlsafe(16)
-        _PENDING_STATES[state] = True
+        _PENDING_STATES[state] = time.time()
 
         params = {
             "client_id": self.client_id,
@@ -62,6 +63,21 @@ class GoogleOAuthService:
         }
         auth_url = f"{GOOGLE_AUTH_ENDPOINT}?{urllib.parse.urlencode(params)}"
         return {"authorization_url": auth_url, "state": state}
+
+    def validate_and_consume_state(self, state: Optional[str]) -> bool:
+        """Validate and consume CSRF state parameter to prevent replay attacks and CSRF."""
+        if not state:
+            return False
+        # Clean expired states (> 15 minutes old)
+        now = time.time()
+        expired = [s for s, ts in _PENDING_STATES.items() if isinstance(ts, (int, float)) and now - ts > 900]
+        for s in expired:
+            _PENDING_STATES.pop(s, None)
+
+        if state in _PENDING_STATES:
+            _PENDING_STATES.pop(state, None)
+            return True
+        return False
 
     async def exchange_code_for_tokens(self, code: str) -> Dict[str, Any]:
         """Exchange the received authorization code for OAuth access and refresh tokens."""
@@ -126,6 +142,10 @@ class GoogleOAuthService:
         """Check if user has an active Google OAuth token for Calendar operations."""
         tokens = self.get_user_tokens(user_id)
         return bool(tokens and tokens.get("access_token"))
+
+    def clear_user_tokens(self, user_id: str) -> None:
+        """Clear stored OAuth tokens for a user upon logout."""
+        _OAUTH_TOKEN_STORE.pop(user_id, None)
 
 
 google_oauth_service = GoogleOAuthService()

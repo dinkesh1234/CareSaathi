@@ -74,6 +74,30 @@ def test_google_oauth_url_generation(client):
     assert "state=test_state_123" in url
 
 
+def test_google_oauth_callback_handles_user_cancellation(client):
+    """Test that /api/auth/google/callback redirects with oauth_error when user cancels."""
+    response = client.get("/api/auth/google/callback?error=access_denied&state=any_state", follow_redirects=False)
+    assert response.status_code in (302, 307)
+    location = response.headers["location"]
+    assert "oauth_error=access_denied" in location
+    assert settings.FRONTEND_ORIGIN in location
+
+
+def test_google_oauth_callback_rejects_invalid_csrf_state(client):
+    """Test that /api/auth/google/callback redirects with invalid_csrf_state on bad state."""
+    response = client.get("/api/auth/google/callback?code=mock_code&state=forged_state_999", follow_redirects=False)
+    assert response.status_code in (302, 307)
+    location = response.headers["location"]
+    assert "oauth_error=invalid_csrf_state" in location
+
+
+def test_auth_logout_endpoint(client, anil_token):
+    """Test that /api/auth/logout invalidates session tokens and returns 200."""
+    response = client.post("/api/auth/logout", headers={"Authorization": f"Bearer {anil_token}"})
+    assert response.status_code == 200
+    assert response.json()["status"] == "logged_out"
+
+
 def test_resend_deduplication_cache():
     """Test that Resend service deduplication cache catches identical rapid notifications."""
     key = "test_patient@example.com:med:Ramesh:Amlodipine:08:00"

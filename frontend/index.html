@@ -1276,9 +1276,38 @@
                     <span class="badge" id="integ-status-google-oauth" style="font-size: 0.75rem;">Checking...</span>
                   </div>
                   <p style="font-size: 0.8rem; color: var(--color-navy-600); margin-bottom: 0.75rem;" id="integ-desc-google-oauth">Inspecting credentials...</p>
-                  <button type="button" id="google-login-btn" class="btn btn-sm btn-secondary" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem;">
-                    <span>🌐 Sign in with Google</span>
-                  </button>
+                  <div style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap;">
+                    <button type="button" id="google-login-btn" class="btn btn-sm btn-secondary" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem;">
+                      <span>🌐 Sign in with Google</span>
+                    </button>
+                    <button type="button" id="google-logout-btn" class="btn btn-sm btn-outline" style="display: none; font-size: 0.75rem;" title="Sign out of Google session">
+                      <span>Sign out</span>
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Direct Email / Password Login Card -->
+                <div class="card" style="margin-bottom: 0; padding: 1.15rem; border-left: 4px solid var(--color-navy-500);" id="auth-email-card">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <div>
+                      <strong style="display: block; font-size: 0.95rem; color: var(--color-navy-900);">📧 Email &amp; Password Sign In</strong>
+                      <span style="font-size: 0.75rem; color: var(--color-navy-500);">Direct Backend Authentication</span>
+                    </div>
+                    <span class="badge badge-routine" style="font-size: 0.75rem;">Active</span>
+                  </div>
+                  <form id="email-login-form" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: end; margin-top: 0.5rem;">
+                    <div>
+                      <label for="login-email" style="display: block; font-size: 0.72rem; margin-bottom: 0.2rem; color: var(--color-navy-600);">Email</label>
+                      <input type="email" id="login-email" placeholder="anil.sharma@example.com" value="anil.sharma@example.com" required style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-navy-900);">
+                    </div>
+                    <div>
+                      <label for="login-password" style="display: block; font-size: 0.72rem; margin-bottom: 0.2rem; color: var(--color-navy-600);">Password</label>
+                      <input type="password" id="login-password" placeholder="DemoPassword123!" value="DemoPassword123!" required style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-navy-900);">
+                    </div>
+                    <div>
+                      <button type="submit" class="btn btn-sm btn-primary" style="font-size: 0.75rem; white-space: nowrap; height: 30px;">Sign In</button>
+                    </div>
+                  </form>
                 </div>
 
                 <!-- 3. Google Calendar API -->

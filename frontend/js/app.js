@@ -724,6 +724,20 @@ function setupEventListeners() {
     });
   }
 
+  const googleLogoutBtn = document.getElementById('google-logout-btn');
+  if (googleLogoutBtn) {
+    googleLogoutBtn.addEventListener('click', () => {
+      logoutGoogleUser();
+    });
+  }
+
+  const emailLoginForm = document.getElementById('email-login-form');
+  if (emailLoginForm) {
+    emailLoginForm.addEventListener('submit', (e) => {
+      handleEmailLogin(e);
+    });
+  }
+
   const testEmailBtn = document.getElementById('send-test-email-btn');
   if (testEmailBtn) {
     testEmailBtn.addEventListener('click', () => {
@@ -788,11 +802,40 @@ async function fetchDemoTokens() {
     const data = await res.json();
     appState.demoTokens = data.demo_tokens || [];
 
+    // Check if an active Google OAuth session was saved in sessionStorage
+    const savedGoogleSession = sessionStorage.getItem('caresaathi_google_session');
+    if (savedGoogleSession) {
+      try {
+        const parsed = JSON.parse(savedGoogleSession);
+        if (parsed && parsed.token) {
+          if (!appState.demoTokens.some((u) => u.user_id === parsed.user_id)) {
+            appState.demoTokens.unshift(parsed);
+          }
+          populateRoleSelector(appState.demoTokens);
+          applyUserSession(parsed);
+          updateGoogleAuthUI();
+          return;
+        }
+      } catch (e) {
+        sessionStorage.removeItem('caresaathi_google_session');
+      }
+    }
+
+    populateRoleSelector(appState.demoTokens);
+
+    // If an active user was already set (e.g. from handleOAuthRedirectCallback)
+    if (appState.currentUser && appState.currentUser.user_id && appState.currentUser.user_id.startsWith('user_google_')) {
+      applyUserSession(appState.currentUser);
+      updateGoogleAuthUI();
+      return;
+    }
+
     // Default to Anil Sharma (Family Owner) on load
     const defaultUser = appState.demoTokens.find((u) => u.user_id === 'user_anil_01') || appState.demoTokens[0];
     if (defaultUser) {
       applyUserSession(defaultUser);
     }
+    updateGoogleAuthUI();
   } catch (err) {
     console.error('Failed to load demo tokens from backend:', err);
   }
@@ -1839,29 +1882,189 @@ async function triggerTestEmail() {
  * Handle Google OAuth Redirect Return Parameters
  */
 function handleOAuthRedirectCallback() {
-  const hash = window.location.hash || '';
-  const search = window.location.search || '';
-  const combined = search + (hash.includes('?') ? '&' + hash.split('?')[1] : '');
+  const url = new URL(window.location.href);
+  const searchParams = url.searchParams;
 
-  if (combined.includes('oauth=success')) {
-    const params = new URLSearchParams(combined);
-    const token = params.get('token');
-    const email = params.get('email');
-    const userId = params.get('user_id');
+  // Also check hash query params if any
+  let hashParams = new URLSearchParams();
+  if (url.hash && url.hash.includes('?')) {
+    hashParams = new URLSearchParams(url.hash.split('?')[1]);
+  }
+
+  const oauthStatus = searchParams.get('oauth') || hashParams.get('oauth');
+  const oauthError = searchParams.get('oauth_error') || hashParams.get('oauth_error');
+
+  if (oauthStatus === 'success') {
+    const token = searchParams.get('token') || hashParams.get('token');
+    const email = searchParams.get('email') || hashParams.get('email');
+    const userId = searchParams.get('user_id') || hashParams.get('user_id');
+    const fullName = searchParams.get('name') || hashParams.get('name') || email;
+    const role = searchParams.get('role') || hashParams.get('role') || 'adult_member';
 
     if (token) {
-      appState.activeToken = token;
-      if (userId) appState.activeUserId = userId;
-      logActivity(`Authenticated via Google OAuth (${email || 'Google Account'})`, 'Just now • Google Identity', '🌐');
-      alert(`🎉 Google OAuth Successful!\n\nAccount linked: ${email || 'Google Account'}\nCareSaathi session token activated.`);
-      history.replaceState(null, '', '#settings');
+      const googleUser = {
+        label: `${fullName} (Google: ${role.replace('_', ' ')})`,
+        user_id: userId,
+        email: email,
+        role: role,
+        family_id: 'fam_sharma_101',
+        token: token,
+      };
+
+      // Add to demoTokens array so role-selector includes the user
+      const existingIdx = appState.demoTokens.findIndex((u) => u.user_id === userId);
+      if (existingIdx >= 0) {
+        appState.demoTokens[existingIdx] = googleUser;
+      } else {
+        appState.demoTokens.unshift(googleUser);
+      }
+      populateRoleSelector(appState.demoTokens);
+
+      // Apply User Session
+      applyUserSession(googleUser);
+
+      // Persist Google Session in sessionStorage
+      sessionStorage.setItem('caresaathi_google_session', JSON.stringify(googleUser));
+
+      logActivity(`Authenticated via Google OAuth (${email})`, 'Just now • Google Identity', '🌐');
+      alert(`🎉 Google OAuth Successful!\n\nWelcome, ${fullName}!\nLinked Account: ${email}\nCareSaathi session activated with role: ${role}.`);
+
+      // Clean the URL without reloading
+      window.history.replaceState(null, '', window.location.pathname + '#settings');
+      updateGoogleAuthUI();
       fetchAPIIntegrationsStatus();
     }
-  } else if (combined.includes('oauth_error=')) {
-    const params = new URLSearchParams(combined);
-    const err = params.get('oauth_error');
-    alert(`Google Authentication Notice: ${err}`);
-    history.replaceState(null, '', '#settings');
+  } else if (oauthError) {
+    const errorDescriptions = {
+      access_denied: 'You cancelled the Google sign-in consent request.',
+      invalid_csrf_state: 'Security verification failed (invalid CSRF state). Please try again.',
+      missing_code: 'Google did not return an authorization code.',
+      token_exchange_failed: 'Failed to exchange authorization code with Google OAuth servers.',
+      no_email_returned: 'Your Google profile did not share an email address.',
+    };
+    const desc = errorDescriptions[oauthError] || oauthError;
+    alert(`Google Authentication Notice: ${desc}`);
+    window.history.replaceState(null, '', window.location.pathname + '#settings');
+  }
+}
+
+/**
+ * Update Google OAuth UI Card and Profile Buttons
+ */
+function updateGoogleAuthUI() {
+  const loginBtn = document.getElementById('google-login-btn');
+  const logoutBtn = document.getElementById('google-logout-btn');
+  const statusBadge = document.getElementById('integ-status-google-oauth');
+  const descText = document.getElementById('integ-desc-google-oauth');
+
+  const isGoogleUser = appState.currentUser && (
+    (appState.currentUser.user_id && appState.currentUser.user_id.startsWith('user_google_')) ||
+    (appState.currentUser.label && appState.currentUser.label.includes('Google:')) ||
+    (sessionStorage.getItem('caresaathi_google_session') !== null)
+  );
+
+  if (isGoogleUser && logoutBtn) {
+    logoutBtn.style.display = 'inline-flex';
+    if (loginBtn) {
+      loginBtn.innerHTML = `<span>🔄 Switch Google Account</span>`;
+    }
+    if (statusBadge) {
+      statusBadge.textContent = 'Signed In ✅';
+      statusBadge.className = 'badge badge-routine';
+    }
+    if (descText && appState.currentUser && appState.currentUser.email) {
+      descText.textContent = `Signed in as ${appState.currentUser.email}. Linked to Sharma Family Care Circle.`;
+    }
+  } else {
+    if (logoutBtn) logoutBtn.style.display = 'none';
+    if (loginBtn) {
+      loginBtn.innerHTML = `<span>🌐 Sign in with Google</span>`;
+    }
+  }
+}
+
+/**
+ * Sign out of Google Session
+ */
+async function logoutGoogleUser() {
+  if (appState.activeToken) {
+    try {
+      await fetch(`${CONFIG.API_BASE_URL}/api/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${appState.activeToken}`,
+        },
+      });
+    } catch (e) {
+      console.warn('Backend logout call failed:', e);
+    }
+  }
+  sessionStorage.removeItem('caresaathi_google_session');
+
+  // Remove google user from demoTokens
+  appState.demoTokens = appState.demoTokens.filter((u) => !u.user_id.startsWith('user_google_'));
+  populateRoleSelector(appState.demoTokens);
+
+  // Switch to default Anil Sharma
+  const defaultUser = appState.demoTokens.find((u) => u.user_id === 'user_anil_01') || appState.demoTokens[0];
+  if (defaultUser) {
+    applyUserSession(defaultUser);
+  }
+  updateGoogleAuthUI();
+  alert('You have been signed out of your Google session. Reverted to Anil Sharma (Family Owner).');
+  logActivity('Signed out of Google session', 'Just now • Auth', '🔒');
+  fetchAPIIntegrationsStatus();
+}
+
+/**
+ * Handle Direct Email & Password Sign In
+ * @param {Event} e
+ */
+async function handleEmailLogin(e) {
+  if (e) e.preventDefault();
+  const emailInput = document.getElementById('login-email');
+  const passwordInput = document.getElementById('login-password');
+  if (!emailInput || !passwordInput) return;
+
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) {
+      alert(`Login failed: ${data?.error?.message || data?.detail || 'Invalid email or password'}`);
+      return;
+    }
+
+    const authUser = {
+      label: `${data.user.full_name} (${data.user.role.replace('_', ' ')})`,
+      user_id: data.user.user_id,
+      email: data.user.email,
+      role: data.user.role,
+      family_id: data.user.family_id,
+      token: data.access_token,
+    };
+
+    // Update demo tokens dropdown if not present
+    const existingIdx = appState.demoTokens.findIndex((u) => u.user_id === authUser.user_id);
+    if (existingIdx >= 0) {
+      appState.demoTokens[existingIdx] = authUser;
+    } else {
+      appState.demoTokens.unshift(authUser);
+    }
+    populateRoleSelector(appState.demoTokens);
+
+    applyUserSession(authUser);
+    alert(`🎉 Signed in successfully as ${data.user.full_name} (${data.user.email})!`);
+    logActivity(`Signed in with email (${data.user.email})`, 'Just now • Auth', '🔑');
+  } catch (err) {
+    alert(`Login error: ${err.message}`);
   }
 }
 
