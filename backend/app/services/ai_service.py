@@ -7,7 +7,7 @@ Operates in mock demonstration mode pending Gemini API documentation and credent
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 import re
-from typing import List, Optional
+from typing import Any, List, Optional
 
 from app.auth import AuthenticatedUser
 from app.schemas import (
