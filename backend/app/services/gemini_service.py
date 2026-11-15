@@ -119,7 +119,7 @@ class GeminiAIAssistantProvider(BaseAIAssistantProvider):
                 config=types.GenerateContentConfig(
                     system_instruction=SYSTEM_INSTRUCTION,
                     temperature=0.2,
-                    max_output_tokens=1000,
+                    max_output_tokens=2048,
                 ),
             )
 
