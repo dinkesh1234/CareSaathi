@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # CareSaathi — Family Health & Care Coordination Platform
 
 > **Proactive Care Continuity & Coordination for Every Generation of Your Family — Elderly-Care First.**
