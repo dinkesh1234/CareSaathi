@@ -14,7 +14,15 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
-from app.routers import ai, auth, integrations, profiles
+from app.routers import (
+    ai,
+    appointments,
+    auth,
+    continuity,
+    integrations,
+    medications,
+    profiles,
+)
 
 # Setup basic logging for observability
 logging.basicConfig(
@@ -136,5 +144,8 @@ async def health_check() -> Dict[str, Any]:
 # Register Application Routers
 app.include_router(auth.router)
 app.include_router(profiles.router)
+app.include_router(medications.router)
+app.include_router(appointments.router)
+app.include_router(continuity.router)
 app.include_router(ai.router)
 app.include_router(integrations.router)

@@ -8,7 +8,8 @@ import base64
 import hashlib
 import hmac
 import secrets
-from typing import Dict, Optional
+import time
+from typing import Any, Dict, Optional, Tuple
 
 from fastapi import Depends, Header, HTTPException, status
 from pydantic import BaseModel
@@ -46,14 +47,22 @@ def verify_password(plain_password: str, stored_hash: str, stored_salt_b64: str)
     return hmac.compare_digest(computed_key.hex(), stored_hash)
 
 
-# In-memory Token Store mapping token string -> user_id
-_ACTIVE_SESSIONS: Dict[str, str] = {}
+# Session expiration duration: 24 hours (86,400 seconds)
+SESSION_EXPIRATION_SECONDS = 86400
+
+# In-memory Token Store mapping token string -> {"user_id": str, "created_at": float, "expires_at": float}
+_ACTIVE_SESSIONS: Dict[str, Dict[str, Any]] = {}
 
 
-def create_access_token(user_id: str) -> str:
-    """Generate a cryptographically secure session token."""
+def create_access_token(user_id: str, duration_seconds: int = SESSION_EXPIRATION_SECONDS) -> str:
+    """Generate a cryptographically secure session token with expiration timestamp."""
     token = f"cs_{secrets.token_urlsafe(32)}"
-    _ACTIVE_SESSIONS[token] = user_id
+    now = time.time()
+    _ACTIVE_SESSIONS[token] = {
+        "user_id": user_id,
+        "created_at": now,
+        "expires_at": now + duration_seconds,
+    }
     return token
 
 
@@ -63,13 +72,28 @@ def invalidate_token(token: str) -> bool:
 
 
 def get_token_user_id(token: str) -> Optional[str]:
-    """Resolve token to user_id."""
-    return _ACTIVE_SESSIONS.get(token)
+    """Resolve token to user_id, enforcing session expiration."""
+    session = _ACTIVE_SESSIONS.get(token)
+    if not session:
+        return None
+    now = time.time()
+    if now > session.get("expires_at", 0):
+        _ACTIVE_SESSIONS.pop(token, None)
+        return None
+    return session.get("user_id")
 
 
-# Fast dependency to extract and validate Bearer token
-async def get_current_user_id(authorization: Optional[str] = Header(None, alias="Authorization")) -> str:
-    """FastAPI dependency to extract user_id from Bearer token."""
+def clean_expired_sessions() -> int:
+    """Purge expired session records from memory."""
+    now = time.time()
+    expired = [t for t, s in _ACTIVE_SESSIONS.items() if now > s.get("expires_at", 0)]
+    for t in expired:
+        _ACTIVE_SESSIONS.pop(t, None)
+    return len(expired)
+
+
+async def get_current_token(authorization: Optional[str] = Header(None, alias="Authorization")) -> str:
+    """FastAPI dependency to extract raw bearer token from Authorization header."""
     if not authorization:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -84,8 +108,13 @@ async def get_current_user_id(authorization: Optional[str] = Header(None, alias=
             detail="Invalid authorization format. Expected 'Bearer <token>'.",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    return parts[1].strip()
 
-    token = parts[1].strip()
+
+# Fast dependency to extract and validate Bearer token
+async def get_current_user_id(authorization: Optional[str] = Header(None, alias="Authorization")) -> str:
+    """FastAPI dependency to extract user_id from Bearer token."""
+    token = await get_current_token(authorization)
     user_id = get_token_user_id(token)
     if not user_id:
         raise HTTPException(

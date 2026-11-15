@@ -92,15 +92,51 @@ class GeminiAIAssistantProvider(BaseAIAssistantProvider):
         if not self.is_available:
             return self._mock_fallback.generate_response(user, authorized_profiles, query, history)
 
-        # 4. Construct Contextual Prompt with Authorized Profiles
+        # 4. Construct Contextual Prompt with Authorized Profiles, Medications, Appointments, and Care Gaps
+        from app.repository import repository
+        permitted_ids = {p.profile_id for p in authorized_profiles}
+
         profiles_context_lines = []
         for p in authorized_profiles:
             profiles_context_lines.append(
-                f"- Name: {p.full_name}, Age: {p.age} ({p.age_group}), Relationship: {p.relationship}, "
+                f"- Profile: {p.full_name}, Age: {p.age} ({p.age_group}), Relationship: {p.relationship}, "
                 f"Blood Group: {p.blood_group or 'Not recorded'}, Allergies: {p.allergies or 'None'}, "
                 f"Care Notes: {p.care_notes or 'Stable'}"
             )
         profiles_context_str = "\n".join(profiles_context_lines)
+
+        # Medication Context
+        all_meds = repository.list_medications(user.family_id)
+        permitted_meds = [m for m in all_meds if m.profile_id in permitted_ids]
+        med_lines = []
+        for m in permitted_meds:
+            med_lines.append(
+                f"- {m.patient_name}: {m.name} {m.dosage} at {m.schedule_time} ({m.frequency}). "
+                f"Today's Reported Status: {m.status_today.value} (Last reported: {m.last_reported_at or 'Not yet'}). "
+                f"Supply Remaining: {m.refill_days_left} days."
+            )
+        meds_context_str = "\n".join(med_lines) if med_lines else "None recorded."
+
+        # Appointments Context
+        all_apts = repository.list_appointments(user.family_id)
+        permitted_apts = [a for a in all_apts if a.profile_id in permitted_ids]
+        apt_lines = []
+        for a in permitted_apts:
+            apt_lines.append(
+                f"- {a.patient_name} with {a.doctor_name} ({a.specialty}) on {a.appointment_date} at {a.location}. "
+                f"Escort: {a.escort_name or 'Unassigned/Needed'}."
+            )
+        apts_context_str = "\n".join(apt_lines) if apt_lines else "None scheduled."
+
+        # Active Care Gaps & Unresolved Tasks
+        overview = repository.get_care_continuity_overview(user.family_id)
+        permitted_gaps = [g for g in overview.detected_care_gaps if g.profile_id in permitted_ids]
+        gap_lines = []
+        for g in permitted_gaps:
+            gap_lines.append(
+                f"- [{g.severity.value.upper()}] {g.title}: {g.reason} Suggested Action: {g.suggested_action}"
+            )
+        gaps_context_str = "\n".join(gap_lines) if gap_lines else "No unresolved care gaps detected."
 
         user_context_str = f"Caller: {user.full_name} (Role: {user.role.value}, Family ID: {user.family_id})\n"
 
@@ -108,6 +144,12 @@ class GeminiAIAssistantProvider(BaseAIAssistantProvider):
             f"{user_context_str}\n"
             f"Authorized Family Members Records ({len(authorized_profiles)}):\n"
             f"{profiles_context_str}\n\n"
+            f"Scheduled Medications:\n"
+            f"{meds_context_str}\n\n"
+            f"Upcoming Appointments:\n"
+            f"{apts_context_str}\n\n"
+            f"Unresolved Care Gaps & Priority Tasks Detected from Stored Data:\n"
+            f"{gaps_context_str}\n\n"
             f"User Question: {query}\n"
         )
 

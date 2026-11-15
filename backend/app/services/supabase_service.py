@@ -88,13 +88,95 @@ class SupabaseService:
                 "message": f"Connection check failed: {str(err)}",
             }
 
+    async def get_database_status(self) -> Dict[str, Any]:
+        """Verify Supabase database connectivity, schema table migration state, and storage mode."""
+        conn_status = await self.check_connection()
+        if not conn_status.get("connected"):
+            return {
+                **conn_status,
+                "storage_mode": "in_memory_demo",
+                "tables_migrated": False,
+                "existing_tables": [],
+                "missing_tables": [
+                    "family_accounts",
+                    "users",
+                    "family_profiles",
+                    "caregiver_assignments",
+                    "medications",
+                    "appointments",
+                ],
+            }
+
+        required_tables = [
+            "family_accounts",
+            "users",
+            "family_profiles",
+            "caregiver_assignments",
+            "medications",
+            "appointments",
+        ]
+        existing = []
+        missing = []
+
+        key_to_use = self.service_role_key or self.anon_key
+        headers = {"apikey": key_to_use, "Authorization": f"Bearer {key_to_use}"}
+
+        try:
+            async with httpx.AsyncClient(timeout=4.0) as http_client:
+                for tbl in required_tables:
+                    try:
+                        res = await http_client.get(
+                            f"{self.url.rstrip('/')}/rest/v1/{tbl}?select=count&limit=0",
+                            headers=headers,
+                        )
+                        if res.status_code == 200:
+                            existing.append(tbl)
+                        else:
+                            missing.append(tbl)
+                    except Exception:
+                        missing.append(tbl)
+        except Exception:
+            missing = required_tables
+
+        all_migrated = len(missing) == 0 and len(existing) > 0
+
+        return {
+            "configured": True,
+            "connected": True,
+            "status": "connected" if all_migrated else "tables_pending",
+            "url": self.url,
+            "storage_mode": "supabase_postgresql" if all_migrated else "in_memory_demo",
+            "tables_migrated": all_migrated,
+            "existing_tables": existing,
+            "missing_tables": missing,
+            "message": (
+                "Connected to live Supabase PostgreSQL database with active tables."
+                if all_migrated
+                else (
+                    f"Supabase connection authenticated, but {len(missing)} database tables have not been created yet. "
+                    "Running safely in tested in-memory demo mode. "
+                    "To activate production database mode, paste and run backend/app/supabase_schema.sql in the Supabase SQL editor."
+                )
+            ),
+        }
+
     async def list_profiles(self, family_id: str) -> Optional[List[Dict[str, Any]]]:
-        """Fetch profiles for a family from Supabase if connected."""
+        """Fetch profiles for a family from Supabase if connected and table exists."""
         if not self._client:
             return None
         try:
             res = self._client.table("family_profiles").select("*").eq("family_id", family_id).execute()
             return res.data
+        except Exception:
+            return None
+
+    async def create_profile(self, profile_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+        """Insert profile into Supabase family_profiles table."""
+        if not self._client:
+            return None
+        try:
+            res = self._client.table("family_profiles").insert(profile_data).execute()
+            return res.data[0] if res.data else None
         except Exception:
             return None
 

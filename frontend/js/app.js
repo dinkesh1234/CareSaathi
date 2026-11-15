@@ -731,12 +731,111 @@ function setupEventListeners() {
     });
   }
 
+  // Auth Tabs (Sign In vs Sign Up)
+  const authTabLogin = document.getElementById('auth-tab-login');
+  const authTabSignup = document.getElementById('auth-tab-signup');
   const emailLoginForm = document.getElementById('email-login-form');
+  const emailSignupForm = document.getElementById('email-signup-form');
+
+  if (authTabLogin && authTabSignup && emailLoginForm && emailSignupForm) {
+    authTabLogin.addEventListener('click', () => {
+      emailLoginForm.style.display = 'grid';
+      emailSignupForm.style.display = 'none';
+      authTabLogin.className = 'btn btn-sm btn-primary';
+      authTabSignup.className = 'btn btn-sm btn-secondary';
+    });
+    authTabSignup.addEventListener('click', () => {
+      emailLoginForm.style.display = 'none';
+      emailSignupForm.style.display = 'grid';
+      authTabLogin.className = 'btn btn-sm btn-secondary';
+      authTabSignup.className = 'btn btn-sm btn-primary';
+    });
+  }
+
   if (emailLoginForm) {
     emailLoginForm.addEventListener('submit', (e) => {
       handleEmailLogin(e);
     });
   }
+
+  if (emailSignupForm) {
+    emailSignupForm.addEventListener('submit', (e) => {
+      handleEmailSignup(e);
+    });
+  }
+
+  // Delegated Click Handlers for Live Interactive Actions
+  document.addEventListener('click', (e) => {
+    // Medication status toggle
+    const medToggleBtn = e.target.closest('.btn-toggle-med-status');
+    if (medToggleBtn) {
+      e.preventDefault();
+      const medId = medToggleBtn.dataset.medId;
+      const targetStatus = medToggleBtn.dataset.status;
+      if (medId && targetStatus) {
+        markMedicationStatus(medId, targetStatus);
+      }
+      return;
+    }
+
+    // Medication details alert
+    const medDetailsBtn = e.target.closest('.btn-med-details');
+    if (medDetailsBtn) {
+      e.preventDefault();
+      const name = medDetailsBtn.dataset.medName || 'Medication';
+      const instructions = medDetailsBtn.dataset.instructions || 'Follow physician directions';
+      alert(`💊 ${name} Prescription Details:\n\nInstructions: ${instructions}\n\nClinical Disclaimer: CareSaathi records adherence based on user reporting and does not verify physical ingestion.`);
+      return;
+    }
+
+    // Escort confirmation
+    const escortBtn = e.target.closest('.btn-assign-escort');
+    if (escortBtn) {
+      e.preventDefault();
+      const aptId = escortBtn.dataset.aptId;
+      if (aptId) {
+        confirmAppointmentEscort(aptId);
+      }
+      return;
+    }
+
+    // Google Calendar Sync
+    const calSyncBtn = e.target.closest('.btn-sync-cal');
+    if (calSyncBtn) {
+      e.preventDefault();
+      const aptId = calSyncBtn.dataset.aptId;
+      if (aptId) {
+        syncAppointmentToCalendar(aptId);
+      }
+      return;
+    }
+
+    // Care gap resolution
+    const resolveGapBtn = e.target.closest('.btn-resolve-gap');
+    if (resolveGapBtn) {
+      e.preventDefault();
+      const gapId = resolveGapBtn.dataset.gapId;
+      if (gapId) {
+        resolveCareGap(gapId);
+      }
+      return;
+    }
+
+    // Consultation checklist modal open
+    const checklistBtn = e.target.closest('.open-checklist-btn');
+    if (checklistBtn) {
+      e.preventDefault();
+      const doctor = checklistBtn.dataset.doctor || 'Attending Physician';
+      const patient = checklistBtn.dataset.patient || 'Family Member';
+      const doctorEl = document.getElementById('checklist-doctor-name');
+      if (doctorEl) {
+        doctorEl.textContent = `${doctor} (Patient: ${patient})`;
+      }
+      const modal = document.getElementById('consultation-checklist-modal');
+      if (modal) modal.classList.add('active');
+      return;
+    }
+  });
 
   const testEmailBtn = document.getElementById('send-test-email-btn');
   if (testEmailBtn) {
@@ -889,6 +988,9 @@ function applyUserSession(user) {
 
   // Trigger backend-enforced profile load
   loadFamilyProfiles();
+  loadMedications();
+  loadAppointments();
+  loadCareContinuityOverview();
 }
 
 /**
@@ -1226,6 +1328,479 @@ async function simulateIdorAttack() {
 }
 
 /**
+ * Display a Non-Intrusive Floating Toast Notification
+ * @param {string} message
+ */
+function showToast(message) {
+  let toastContainer = document.getElementById('app-toast-container');
+  if (!toastContainer) {
+    toastContainer = document.createElement('div');
+    toastContainer.id = 'app-toast-container';
+    toastContainer.style.cssText = 'position: fixed; bottom: 24px; right: 24px; z-index: 99999; display: flex; flex-direction: column; gap: 8px; max-width: 440px; pointer-events: none;';
+    document.body.appendChild(toastContainer);
+  }
+  const toast = document.createElement('div');
+  toast.className = 'toast-notification';
+  toast.style.cssText = 'background: var(--color-navy-900); color: white; padding: 0.85rem 1.15rem; border-radius: var(--radius-md); border-left: 4px solid var(--color-teal-400); box-shadow: var(--shadow-lg); font-size: 0.85rem; line-height: 1.4; pointer-events: auto; animation: fadeIn 0.25s ease; transition: opacity 0.3s ease;';
+  toast.innerHTML = escapeHTML(message);
+  toastContainer.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 300);
+  }, 4500);
+}
+
+/**
+ * Handle Direct Email & Password Sign Up (Account Registration)
+ * @param {Event} e
+ */
+async function handleEmailSignup(e) {
+  if (e) e.preventDefault();
+  const fullName = document.getElementById('signup-fullname')?.value.trim();
+  const email = document.getElementById('signup-email')?.value.trim();
+  const password = document.getElementById('signup-password')?.value;
+  const familyName = document.getElementById('signup-family')?.value.trim();
+
+  if (!fullName || !email || !password || !familyName) {
+    alert('Please fill out all signup fields.');
+    return;
+  }
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        full_name: fullName,
+        email: email,
+        password: password,
+        family_name: familyName,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(`Signup failed: ${data?.error?.message || data?.detail || 'Registration error'}`);
+      return;
+    }
+
+    const authUser = {
+      label: `${data.user.full_name} (${data.user.role.replace('_', ' ')})`,
+      user_id: data.user.user_id,
+      email: data.user.email,
+      role: data.user.role,
+      family_id: data.user.family_id,
+      token: data.access_token,
+    };
+
+    appState.demoTokens.unshift(authUser);
+    populateRoleSelector(appState.demoTokens);
+    applyUserSession(authUser);
+    showToast(`🎉 Welcome to CareSaathi, ${data.user.full_name}! Account created.`);
+    logActivity(`Created new family account (${familyName})`, 'Just now • Auth', '👤');
+  } catch (err) {
+    alert(`Signup error: ${err.message}`);
+  }
+}
+
+/**
+ * Fetch and Render Prescription Medications across Family Care Circle
+ */
+async function loadMedications() {
+  if (!appState.activeToken) return;
+  const tbody = document.getElementById('medication-table-body');
+  const timeline = document.getElementById('dashboard-med-timeline');
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/medications`, {
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${appState.activeToken}`,
+      },
+    });
+
+    if (!res.ok) {
+      if (res.status === 403) {
+        if (tbody) tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--color-danger-text); padding: 1.5rem;">Access restricted by RBAC credentials.</td></tr>`;
+        if (timeline) timeline.innerHTML = `<div style="padding: 1rem; color: var(--color-navy-500); text-align: center;">Medication schedule restricted for current role.</div>`;
+      }
+      return;
+    }
+
+    const meds = await res.json();
+    if (!Array.isArray(meds)) return;
+
+    // Render Medication Table
+    if (tbody) {
+      if (meds.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--color-navy-500); padding: 1.5rem;">No scheduled prescriptions for this care circle.</td></tr>`;
+      } else {
+        tbody.innerHTML = meds.map((m) => {
+          const isTaken = m.status_today === 'reported_taken';
+          const isSkipped = m.status_today === 'skipped';
+          let statusBadge = '<span class="status-tag due">Due Dose</span>';
+          if (isTaken) statusBadge = '<span class="status-tag stable">Taken Today ✅</span>';
+          else if (isSkipped) statusBadge = '<span class="status-tag scheduled">Skipped</span>';
+
+          const refillAlert = m.refill_days_left <= 8 ? '<span class="status-tag due" style="margin-left: 0.35rem; font-size: 0.72rem;">Low Supply</span>' : '';
+
+          return `
+            <tr>
+              <td><strong>${escapeHTML(m.name)}</strong> <span style="font-size: 0.85rem; color: var(--color-navy-600);">${escapeHTML(m.dosage)}</span></td>
+              <td>${escapeHTML(m.patient_name)}</td>
+              <td>${escapeHTML(m.schedule_time)}</td>
+              <td>${escapeHTML(m.frequency)}</td>
+              <td>${m.refill_days_left} Days ${refillAlert}</td>
+              <td>${statusBadge}</td>
+              <td>
+                <div style="display: flex; gap: 0.35rem;">
+                  <button class="btn btn-sm ${isTaken ? 'btn-secondary' : 'btn-primary'} btn-toggle-med-status" data-med-id="${m.medication_id}" data-status="${isTaken ? 'pending' : 'reported_taken'}">
+                    ${isTaken ? 'Mark Pending' : 'Mark Taken'}
+                  </button>
+                  <button class="btn btn-sm btn-secondary btn-med-details" data-med-name="${escapeHTML(m.name)}" data-instructions="${escapeHTML(m.instructions || 'Take as directed')}">Details</button>
+                </div>
+              </td>
+            </tr>
+          `;
+        }).join('');
+      }
+    }
+
+    // Render Dashboard Medication Timeline
+    if (timeline) {
+      if (meds.length === 0) {
+        timeline.innerHTML = `<div style="padding: 1rem; color: var(--color-navy-500); text-align: center;">No scheduled medications for today.</div>`;
+      } else {
+        timeline.innerHTML = meds.map((m) => {
+          const isTaken = m.status_today === 'reported_taken';
+          return `
+            <div class="med-item ${isTaken ? 'taken' : ''}" data-med-id="${m.medication_id}">
+              <div class="med-info">
+                <span class="med-pill-icon" aria-hidden="true">💊</span>
+                <div>
+                  <div class="med-name">${escapeHTML(m.name)} ${escapeHTML(m.dosage)}</div>
+                  <div class="med-sub">${escapeHTML(m.patient_name)} • ${escapeHTML(m.instructions || m.frequency)}</div>
+                </div>
+              </div>
+              <div class="med-action">
+                <span class="time-badge" style="${!isTaken ? 'color: var(--color-warning-text); background-color: var(--color-warning-bg);' : ''}">${escapeHTML(m.schedule_time)} ${!isTaken ? '(Due)' : ''}</span>
+                <button class="btn btn-sm ${isTaken ? 'btn-secondary' : 'btn-primary'} btn-toggle-med-status" data-med-id="${m.medication_id}" data-status="${isTaken ? 'pending' : 'reported_taken'}">
+                  ${isTaken ? 'Taken ✅' : 'Mark Taken'}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load medications:', err);
+  }
+}
+
+/**
+ * Record User-Reported Medication Status
+ * @param {string} medId
+ * @param {string} targetStatus
+ */
+async function markMedicationStatus(medId, targetStatus) {
+  if (!appState.activeToken) return;
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/medications/${medId}/status`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${appState.activeToken}`,
+      },
+      body: JSON.stringify({
+        status: targetStatus,
+        confirmation_notes: `Marked as ${targetStatus} by ${appState.currentUser?.label || 'user'}`,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(`Could not update medication status: ${err?.detail || err?.error?.message || res.statusText}`);
+      return;
+    }
+
+    const data = await res.json();
+    logActivity(`Recorded ${data.name} dose as ${targetStatus}`, 'Just now • Adherence Verified', '💊');
+    showToast(`Adherence Logged: ${data.name} marked as ${targetStatus}. (${data.clinical_disclaimer})`);
+    await loadMedications();
+    await loadCareContinuityOverview();
+  } catch (err) {
+    console.error('Error marking medication:', err);
+  }
+}
+
+/**
+ * Fetch and Render Family Appointments
+ */
+async function loadAppointments() {
+  if (!appState.activeToken) return;
+  const container = document.getElementById('appointments-grid-container');
+  const dashList = document.getElementById('dashboard-appointments-list');
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/appointments`, {
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${appState.activeToken}`,
+      },
+    });
+
+    if (!res.ok) return;
+    const apts = await res.json();
+    if (!Array.isArray(apts)) return;
+
+    if (container) {
+      if (apts.length === 0) {
+        container.innerHTML = `<div class="card" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: var(--color-navy-500);">No appointments scheduled.</div>`;
+      } else {
+        container.innerHTML = apts.map((apt) => {
+          const hasEscort = Boolean(apt.escort_name);
+          return `
+            <div class="card">
+              <div class="card-header">
+                <h3>${escapeHTML(apt.specialty)}</h3>
+                <span class="status-tag ${apt.status === 'scheduled' ? 'due' : 'stable'}">${escapeHTML(apt.status.toUpperCase())}</span>
+              </div>
+              <p><strong>Patient:</strong> ${escapeHTML(apt.patient_name)}</p>
+              <p><strong>Doctor:</strong> ${escapeHTML(apt.doctor_name)}</p>
+              <p><strong>Location:</strong> ${escapeHTML(apt.location)}</p>
+              <p><strong>Date &amp; Time:</strong> ${escapeHTML(apt.appointment_date)}</p>
+              <div style="margin: 0.75rem 0; padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); background: var(--color-surface-alt); font-size: 0.825rem;">
+                <strong>Family Escort:</strong>
+                ${hasEscort 
+                  ? `<span class="status-tag stable" style="margin-left: 0.4rem;">🛡️ ${escapeHTML(apt.escort_name)} (Confirmed)</span>` 
+                  : `<span class="status-tag due" style="margin-left: 0.4rem;">⚠️ Unassigned Escort</span> <button class="btn btn-sm btn-outline btn-assign-escort" data-apt-id="${apt.appointment_id}" style="font-size: 0.72rem; padding: 0.15rem 0.5rem; margin-left: 0.5rem;">Confirm Escort</button>`
+                }
+              </div>
+              <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid var(--color-border); display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                <button class="btn btn-sm btn-primary btn-sync-cal" data-apt-id="${apt.appointment_id}">📅 Add to Calendar</button>
+                <button class="btn btn-sm btn-secondary open-checklist-btn" data-doctor="${escapeHTML(apt.doctor_name)}" data-patient="${escapeHTML(apt.patient_name)}">Consultation Checklist</button>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    if (dashList) {
+      if (apts.length === 0) {
+        dashList.innerHTML = `<div style="padding: 1rem; color: var(--color-navy-500); text-align: center;">No upcoming appointments.</div>`;
+      } else {
+        dashList.innerHTML = apts.slice(0, 3).map((apt) => {
+          const dateParts = apt.appointment_date.split(' ')[0].split('-');
+          const day = dateParts[2] || '16';
+          const month = 'Nov';
+          return `
+            <div class="appointment-item">
+              <div class="appointment-date-badge">
+                <span class="apt-day">${day}</span>
+                <span class="apt-month">${month}</span>
+              </div>
+              <div class="appointment-details">
+                <div class="apt-title">${escapeHTML(apt.specialty)}</div>
+                <div class="apt-doctor">${escapeHTML(apt.doctor_name)} • ${escapeHTML(apt.location)}</div>
+                <span class="apt-for">Patient: ${escapeHTML(apt.patient_name)} • ${escapeHTML(apt.appointment_date)}</span>
+              </div>
+              <button class="btn btn-sm btn-secondary open-checklist-btn" data-doctor="${escapeHTML(apt.doctor_name)}" data-patient="${escapeHTML(apt.patient_name)}">Prep Notes</button>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load appointments:', err);
+  }
+}
+
+/**
+ * Confirm Escort for an Appointment
+ * @param {string} aptId
+ */
+async function confirmAppointmentEscort(aptId) {
+  if (!appState.activeToken || !appState.currentUser) return;
+  const escortName = appState.currentUser.label.split(' (')[0];
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/appointments/${aptId}/confirm-escort`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${appState.activeToken}`,
+      },
+      body: JSON.stringify({
+        escort_user_id: appState.activeUserId,
+        escort_name: escortName,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(`Could not assign escort: ${err?.detail || err?.error?.message || res.statusText}`);
+      return;
+    }
+
+    const apt = await res.json();
+    logActivity(`Confirmed family escort (${escortName}) for ${apt.patient_name}'s appointment`, 'Just now • Appointments', '🛡️');
+    showToast(`✅ Escort Confirmed: ${escortName} assigned for ${apt.patient_name}.`);
+    await loadAppointments();
+    await loadCareContinuityOverview();
+  } catch (err) {
+    console.error('Error confirming escort:', err);
+  }
+}
+
+/**
+ * Sync Appointment to Google Calendar
+ * @param {string} aptId
+ */
+async function syncAppointmentToCalendar(aptId) {
+  if (!appState.activeToken) return;
+  try {
+    const aptRes = await fetch(`${CONFIG.API_BASE_URL}/api/appointments`, {
+      headers: { 'Authorization': `Bearer ${appState.activeToken}` },
+    });
+    const apts = await aptRes.json();
+    const apt = Array.isArray(apts) ? apts.find(a => a.appointment_id === aptId) : null;
+
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/integrations/calendar/sync`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${appState.activeToken}`,
+      },
+      body: JSON.stringify({
+        appointment_id: aptId,
+        event_title: apt ? `${apt.specialty} - ${apt.patient_name}` : 'Family Medical Appointment',
+        start_time: apt?.appointment_date || new Date().toISOString(),
+        location: apt?.location || 'Apollo Heart Center',
+        description: apt?.notes || 'CareSaathi Scheduled Healthcare Consultation',
+      }),
+    });
+
+    const data = await res.json();
+    if (res.ok) {
+      showToast(`📅 Calendar Sync: ${data.message || 'Appointment queued for calendar sync.'}`);
+      logActivity(`Synced appointment ${aptId} to Google Calendar`, 'Just now • Integrations', '📅');
+    } else {
+      showToast(`Calendar Sync: ${data?.error?.message || data?.detail || 'Google Calendar connection required. Connect Google Account via Integrations panel.'}`);
+    }
+  } catch (err) {
+    showToast(`Calendar sync error: ${err.message}`);
+  }
+}
+
+/**
+ * Fetch and Render Care Continuity Overview (Active Care Gaps & Shift Handoffs)
+ */
+async function loadCareContinuityOverview() {
+  if (!appState.activeToken) return;
+  const gapsContainer = document.getElementById('continuity-gaps-container');
+  const handoffsList = document.getElementById('handoff-notes-list');
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/continuity/overview`, {
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': `Bearer ${appState.activeToken}`,
+      },
+    });
+
+    if (!res.ok) return;
+    const overview = await res.json();
+
+    // Render Care Gaps
+    if (gapsContainer) {
+      const gaps = overview.detected_care_gaps || [];
+      if (gaps.length === 0) {
+        gapsContainer.innerHTML = `
+          <div style="background: var(--color-success-bg); border: 1px solid var(--color-success-border); color: var(--color-success-text); padding: 1rem; border-radius: var(--radius-md); font-size: 0.85rem;">
+            ✅ <strong>All Care Protocols Up to Date:</strong> Zero active safety risks or unconfirmed tasks detected for senior patient Ramesh Sharma.
+          </div>
+        `;
+      } else {
+        gapsContainer.innerHTML = gaps.map((gap) => {
+          const isHigh = gap.severity === 'high';
+          const borderColor = isHigh ? 'var(--color-error)' : 'var(--color-warning)';
+          const badgeClass = isHigh ? 'badge-urgent' : 'badge-routine';
+
+          return `
+            <div class="care-gap-item" style="display: flex; justify-content: space-between; align-items: center; background: var(--color-surface); padding: 0.85rem 1rem; border-radius: var(--radius-md); border-left: 4px solid ${borderColor}; box-shadow: var(--shadow-xs); flex-wrap: wrap; gap: 0.75rem;">
+              <div style="max-width: 680px;">
+                <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.2rem;">
+                  <span class="badge ${badgeClass}" style="font-size: 0.72rem;">${escapeHTML(gap.severity.toUpperCase())}</span>
+                  <strong style="color: var(--color-navy-900); font-size: 0.88rem;">${escapeHTML(gap.title)}</strong>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--color-navy-600); margin: 0.2rem 0;">${escapeHTML(gap.description)}</p>
+                <div style="font-size: 0.75rem; color: var(--color-teal-700);">💡 Recommendation: ${escapeHTML(gap.recommended_action)}</div>
+              </div>
+              <button class="btn btn-sm btn-secondary btn-resolve-gap" data-gap-id="${escapeHTML(gap.alert_id)}" style="font-size: 0.75rem; white-space: nowrap;">
+                Resolve Gap &check;
+              </button>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    // Render Handoffs Feed
+    if (handoffsList && overview.active_handoffs) {
+      if (overview.active_handoffs.length > 0) {
+        handoffsList.innerHTML = overview.active_handoffs.map((h) => {
+          return `
+            <div class="handoff-note-item" style="border-left: 3px solid var(--color-teal-500); padding-left: 1rem; margin-bottom: 0.75rem;">
+              <p style="font-size: 0.875rem; color: var(--color-navy-700); line-height: 1.6; margin-bottom: 0.35rem;">
+                <strong>${escapeHTML(h.patient_name)} (${escapeHTML(h.shift_type)}):</strong> ${escapeHTML(h.handoff_notes)}
+              </p>
+              <div style="font-size: 0.775rem; color: var(--color-navy-500);">
+                From: ${escapeHTML(h.from_caregiver_name)} &bull; To: ${escapeHTML(h.to_caregiver_name)} &bull; ${escapeHTML(h.status.toUpperCase())}
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+  } catch (err) {
+    console.error('Failed to load care continuity overview:', err);
+  }
+}
+
+/**
+ * Resolve Care Gap via Backend API
+ * @param {string} gapId
+ */
+async function resolveCareGap(gapId) {
+  if (!appState.activeToken) return;
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/continuity/gaps/${gapId}/resolve`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${appState.activeToken}`,
+      },
+      body: JSON.stringify({
+        resolution_notes: `Resolved by ${appState.currentUser?.label || 'care circle'}`,
+      }),
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(`Could not resolve gap: ${err?.detail || err?.error?.message || res.statusText}`);
+      return;
+    }
+
+    showToast(`✅ Care gap resolved.`);
+    logActivity(`Resolved care gap: ${gapId}`, 'Just now • Care Continuity Engine', '🛡️');
+    await loadCareContinuityOverview();
+    await loadMedications();
+  } catch (err) {
+    console.error('Error resolving care gap:', err);
+  }
+}
+
+/**
  * Setup Modal Triggers & Form Submissions
  */
 function setupModals() {
@@ -1255,17 +1830,118 @@ function setupModals() {
   });
 
   if (dom.scheduleAptForm) {
-    dom.scheduleAptForm.addEventListener('submit', (e) => {
+    dom.scheduleAptForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const member = document.getElementById('modal-apt-member').value;
-      const title = document.getElementById('modal-apt-title').value;
-      const doctor = document.getElementById('modal-apt-doctor').value;
-      const dateVal = document.getElementById('modal-apt-date').value;
+      const member = document.getElementById('modal-apt-member')?.value || 'Ramesh Sharma';
+      const title = document.getElementById('modal-apt-title')?.value.trim();
+      const doctor = document.getElementById('modal-apt-doctor')?.value.trim();
+      const dateVal = document.getElementById('modal-apt-date')?.value;
 
-      logActivity(`Scheduled appointment: ${title} for ${member} with ${doctor} (${dateVal})`, 'Just now • Care Coordinator', '📅');
-      dom.scheduleAptModal.classList.remove('active');
-      dom.scheduleAptForm.reset();
-      alert(`Appointment scheduled successfully for ${member}!`);
+      if (!title || !doctor || !dateVal) {
+        alert('Please complete all appointment fields.');
+        return;
+      }
+
+      const profile = appState.familyProfiles.find(p => p.full_name === member) || appState.familyProfiles[0];
+      const profileId = profile ? profile.profile_id : 'prof_ramesh_101';
+
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/api/appointments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${appState.activeToken}`,
+          },
+          body: JSON.stringify({
+            profile_id: profileId,
+            doctor_name: doctor,
+            specialty: title,
+            appointment_date: dateVal,
+            location: 'Apollo Heart Center, Block C',
+            notes: `Booked by ${appState.currentUser?.label || 'Family'}`,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert(`Failed to schedule: ${err?.detail || err?.error?.message || res.statusText}`);
+          return;
+        }
+
+        const apt = await res.json();
+        logActivity(`Scheduled appointment: ${title} for ${member} with ${doctor} (${dateVal})`, 'Just now • Care Coordinator', '📅');
+        dom.scheduleAptModal.classList.remove('active');
+        dom.scheduleAptForm.reset();
+        showToast(`✅ Consultation scheduled successfully for ${member} with ${doctor}.`);
+        await loadAppointments();
+        await loadCareContinuityOverview();
+      } catch (err) {
+        alert(`Error booking appointment: ${err.message}`);
+      }
+    });
+  }
+
+  // Prescription Modal Handler
+  const addRxBtn = document.getElementById('add-prescription-btn');
+  const addRxModal = document.getElementById('add-prescription-modal');
+  const addRxForm = document.getElementById('add-prescription-form');
+
+  if (addRxBtn && addRxModal) {
+    addRxBtn.addEventListener('click', () => {
+      addRxModal.classList.add('active');
+    });
+  }
+
+  if (addRxForm) {
+    addRxForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const profileId = document.getElementById('modal-rx-member')?.value || 'prof_ramesh_101';
+      const name = document.getElementById('modal-rx-name')?.value.trim();
+      const dosage = document.getElementById('modal-rx-dosage')?.value.trim();
+      const time = document.getElementById('modal-rx-time')?.value.trim();
+      const frequency = document.getElementById('modal-rx-frequency')?.value || 'Once Daily';
+      const refill = parseInt(document.getElementById('modal-rx-refill')?.value, 10) || 30;
+      const instructions = document.getElementById('modal-rx-instructions')?.value.trim();
+
+      if (!name || !dosage || !time) {
+        alert('Please fill out medication name, dosage and timing.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/api/medications`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${appState.activeToken}`,
+          },
+          body: JSON.stringify({
+            profile_id: profileId,
+            name: name,
+            dosage: dosage,
+            schedule_time: time,
+            frequency: frequency,
+            refill_days_left: refill,
+            instructions: instructions || 'Take as directed',
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert(`Failed to schedule prescription: ${err?.detail || err?.error?.message || res.statusText}`);
+          return;
+        }
+
+        const med = await res.json();
+        logActivity(`Scheduled new prescription: ${name} (${dosage}) for ${med.patient_name}`, 'Just now • Prescriptions', '💊');
+        addRxModal.classList.remove('active');
+        addRxForm.reset();
+        showToast(`✅ Prescription ${name} scheduled for ${med.patient_name}.`);
+        await loadMedications();
+        await loadCareContinuityOverview();
+      } catch (err) {
+        alert(`Error adding medication: ${err.message}`);
+      }
     });
   }
 
@@ -1357,34 +2033,62 @@ function setupModals() {
   }
 
   if (dom.addHandoffForm) {
-    dom.addHandoffForm.addEventListener('submit', (e) => {
+    dom.addHandoffForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const caregiver = document.getElementById('handoff-caregiver-name').value;
-      const shift = document.getElementById('handoff-shift-type').value;
-      const member = document.getElementById('handoff-member-target').value;
-      const priority = document.getElementById('handoff-priority').value;
-      const notes = document.getElementById('handoff-notes').value.trim();
+      const member = document.getElementById('modal-handoff-member')?.value || 'Ramesh Sharma';
+      const shift = document.getElementById('modal-handoff-shift')?.value.trim() || 'Caregiver Shift';
+      const notes = document.getElementById('modal-handoff-note')?.value.trim();
 
-      const cardHtml = `
-        <div class="handoff-card" style="border-left: 4px solid var(--color-${priority === 'high' ? 'danger' : 'teal'}-border); margin-bottom: 0.75rem;">
-          <div class="handoff-header">
-            <div>
-              <span class="handoff-author">👩‍⚕️ ${escapeHTML(caregiver)}</span>
-              <span class="badge ${priority === 'high' ? 'badge-urgent' : 'badge-routine'}">${priority.toUpperCase()}</span>
-            </div>
-            <span class="handoff-time">Just now • ${escapeHTML(shift)}</span>
-          </div>
-          <p class="handoff-body"><strong>Patient: ${escapeHTML(member)}:</strong> ${escapeHTML(notes)}</p>
-        </div>
-      `;
-
-      if (dom.handoffNotesList) {
-        dom.handoffNotesList.insertAdjacentHTML('afterbegin', cardHtml);
+      if (!notes) {
+        alert('Please enter shift handoff notes.');
+        return;
       }
-      if (dom.addHandoffModal) dom.addHandoffModal.classList.remove('active');
-      dom.addHandoffForm.reset();
-      logActivity(`Logged caregiver handoff note for ${member}`, 'Just now • Care Continuity', '📋');
-      alert('Caregiver shift handoff note saved successfully.');
+
+      const profile = appState.familyProfiles.find(p => p.full_name.includes(member.split(' ')[0])) || appState.familyProfiles[0];
+      const profileId = profile ? profile.profile_id : 'prof_ramesh_101';
+      const authorName = appState.currentUser?.label?.split(' (')[0] || 'Caregiver';
+
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/api/continuity/handoffs`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${appState.activeToken}`,
+          },
+          body: JSON.stringify({
+            profile_id: profileId,
+            shift_type: shift,
+            from_caregiver_name: authorName,
+            to_caregiver_name: 'Care Circle',
+            priority: 'routine',
+            handoff_notes: notes,
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert(`Failed to save handoff: ${err?.detail || err?.error?.message || res.statusText}`);
+          return;
+        }
+
+        const handoff = await res.json();
+        logActivity(`Logged caregiver handoff note for ${member}`, 'Just now • Care Continuity', '📋');
+        if (dom.addHandoffModal) dom.addHandoffModal.classList.remove('active');
+        dom.addHandoffForm.reset();
+        showToast(`✅ Caregiver shift handoff saved for ${member}.`);
+        await loadCareContinuityOverview();
+      } catch (err) {
+        alert(`Error saving handoff note: ${err.message}`);
+      }
+    });
+  }
+
+  // Refresh Continuity Gaps
+  const refreshContinuityBtn = document.getElementById('refresh-continuity-btn');
+  if (refreshContinuityBtn) {
+    refreshContinuityBtn.addEventListener('click', async () => {
+      await loadCareContinuityOverview();
+      showToast('🔄 Care Continuity Engine re-scanned active records.');
     });
   }
 

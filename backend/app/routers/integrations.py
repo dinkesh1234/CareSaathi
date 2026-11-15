@@ -63,8 +63,8 @@ async def get_integrations_status() -> Dict[str, Any]:
 
     Strict rule: Never reports 'Connected' unless actual backend verification succeeds.
     """
-    # 1. Supabase check
-    supabase_status = await supabase_service.check_connection()
+    # 1. Supabase database check (probes PostgREST and tables readiness)
+    supabase_status = await supabase_service.get_database_status()
 
     # 2. Google OAuth check
     google_oauth_status = {

@@ -1,5 +1,6 @@
 """Authentication routes for CareSaathi."""
 
+import secrets
 from typing import Optional
 import urllib.parse
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -8,16 +9,68 @@ from fastapi.responses import RedirectResponse
 from app.auth import (
     AuthenticatedUser,
     create_access_token,
+    get_current_token,
     get_current_user_id,
     hash_password,
+    invalidate_token,
     verify_password,
 )
 from app.config import settings
 from app.repository import repository
-from app.schemas import LoginRequest, Role, TokenResponse, UserResponse
+from app.schemas import LoginRequest, Role, SignupRequest, TokenResponse, UserResponse
 from app.services.google_auth_service import google_oauth_service
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
+
+
+@router.post("/signup", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
+async def signup(registration: SignupRequest) -> TokenResponse:
+    """Register a new user account, provision a family care circle, and issue a session token."""
+    existing_user = repository.get_user_by_email(registration.email)
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email address already exists. Please sign in.",
+        )
+
+    # Hash password securely using scrypt with a unique random salt
+    pw_hash, salt = hash_password(registration.password)
+    user_id = f"user_{secrets.token_hex(6)}"
+    family_id = f"fam_{secrets.token_hex(6)}"
+
+    new_user = AuthenticatedUser(
+        user_id=user_id,
+        email=registration.email,
+        full_name=registration.full_name,
+        family_id=family_id,
+        role=registration.role,
+        password_hash=pw_hash,
+        salt=salt,
+    )
+    repository.users[new_user.user_id] = new_user
+
+    # Automatically provision primary family member profile for the new user
+    repository.create_profile(
+        family_id=family_id,
+        full_name=registration.full_name,
+        age=35,
+        relationship="Self / Account Holder",
+        guardian_user_ids=[new_user.user_id],
+        care_notes="Primary family coordinator account",
+    )
+
+    token = create_access_token(new_user.user_id)
+    return TokenResponse(
+        access_token=token,
+        token_type="Bearer",
+        user=UserResponse(
+            user_id=new_user.user_id,
+            email=new_user.email,
+            full_name=new_user.full_name,
+            family_id=new_user.family_id,
+            role=new_user.role,
+        ),
+    )
 
 
 @router.post("/login", response_model=TokenResponse)
@@ -186,7 +239,11 @@ async def google_auth_callback(
 
 
 @router.post("/logout")
-async def logout(user_id: str = Depends(get_current_user_id)):
-    """Log out current user and clear server-side OAuth tokens if any."""
+async def logout(
+    user_id: str = Depends(get_current_user_id),
+    token: str = Depends(get_current_token),
+):
+    """Log out current user, revoke active session token, and clear OAuth tokens."""
+    invalidate_token(token)
     google_oauth_service.clear_user_tokens(user_id)
     return {"status": "logged_out", "message": "Session invalidated successfully."}

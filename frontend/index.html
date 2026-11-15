@@ -480,7 +480,7 @@
                   <h3>Upcoming Appointments</h3>
                   <button class="btn btn-sm btn-primary" id="open-schedule-apt-btn">+ Schedule</button>
                 </div>
-                <div class="appointment-list">
+                <div class="appointment-list" id="dashboard-appointments-list">
                   <div class="appointment-item">
                     <div class="appointment-date-badge">
                       <span class="apt-day">16</span>
@@ -749,7 +749,7 @@
                   <th>Action</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody id="medication-table-body">
                 <tr>
                   <td><strong>Amlodipine 5mg</strong></td>
                   <td>Ramesh Sharma</td>
@@ -807,7 +807,7 @@
 
 
 
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+          <div id="appointments-grid-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
             <div class="card">
               <div class="card-header">
                 <h3>Cardiology Review (Tomorrow)</h3>
@@ -873,7 +873,7 @@
                     <th>Toggle</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody id="devices-table-body">
                   <tr>
                     <td><strong>Omron Evolv Bluetooth BP Monitor</strong></td>
                     <td>Ramesh Sharma</td>
@@ -959,6 +959,24 @@
             </div>
             <div class="view-actions">
               <button class="btn btn-primary" id="open-add-handoff-btn">+ Add Handoff Note</button>
+            </div>
+          </div>
+
+          <!-- Care Continuity Gap Detection Card -->
+          <div class="card" id="continuity-gaps-card" style="margin-bottom: 1.5rem; border-left: 4px solid var(--color-warning);">
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem;">
+              <div>
+                <h3 style="display: flex; align-items: center; gap: 0.5rem; margin: 0;">
+                  <span>🚨</span> Proactive Care Gaps &amp; Safety Risks
+                </h3>
+                <p style="font-size: 0.8rem; color: var(--color-navy-600); margin: 0.25rem 0 0 0;">
+                  Automated rule-based detection for senior patient Ramesh Sharma (overdue doses, refill shortages, unassigned escorts)
+                </p>
+              </div>
+              <button class="btn btn-sm btn-secondary" id="refresh-continuity-btn" style="font-size: 0.75rem;">↻ Re-scan Gaps</button>
+            </div>
+            <div id="continuity-gaps-container" style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
+              <div style="font-size: 0.85rem; color: var(--color-navy-500); padding: 0.5rem 0;">Analyzing active records for care gaps...</div>
             </div>
           </div>
 
@@ -1286,15 +1304,20 @@
                   </div>
                 </div>
 
-                <!-- Direct Email / Password Login Card -->
+                <!-- Direct Email / Password Login & Signup Card -->
                 <div class="card" style="margin-bottom: 0; padding: 1.15rem; border-left: 4px solid var(--color-navy-500);" id="auth-email-card">
                   <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
                     <div>
-                      <strong style="display: block; font-size: 0.95rem; color: var(--color-navy-900);">📧 Email &amp; Password Sign In</strong>
-                      <span style="font-size: 0.75rem; color: var(--color-navy-500);">Direct Backend Authentication</span>
+                      <strong style="display: block; font-size: 0.95rem; color: var(--color-navy-900);">📧 Direct Backend Authentication</strong>
+                      <span style="font-size: 0.75rem; color: var(--color-navy-500);">Secure Email &amp; Password Access</span>
                     </div>
-                    <span class="badge badge-routine" style="font-size: 0.75rem;">Active</span>
+                    <div style="display: flex; gap: 0.35rem;">
+                      <button type="button" class="btn btn-sm btn-primary" id="auth-tab-login" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;">Sign In</button>
+                      <button type="button" class="btn btn-sm btn-secondary" id="auth-tab-signup" style="font-size: 0.72rem; padding: 0.2rem 0.5rem;">Sign Up</button>
+                    </div>
                   </div>
+
+                  <!-- Sign In Form -->
                   <form id="email-login-form" style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 0.5rem; align-items: end; margin-top: 0.5rem;">
                     <div>
                       <label for="login-email" style="display: block; font-size: 0.72rem; margin-bottom: 0.2rem; color: var(--color-navy-600);">Email</label>
@@ -1306,6 +1329,29 @@
                     </div>
                     <div>
                       <button type="submit" class="btn btn-sm btn-primary" style="font-size: 0.75rem; white-space: nowrap; height: 30px;">Sign In</button>
+                    </div>
+                  </form>
+
+                  <!-- Sign Up Form (hidden by default) -->
+                  <form id="email-signup-form" style="display: none; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 0.5rem; align-items: end; margin-top: 0.5rem;">
+                    <div>
+                      <label for="signup-fullname" style="display: block; font-size: 0.72rem; margin-bottom: 0.2rem; color: var(--color-navy-600);">Full Name</label>
+                      <input type="text" id="signup-fullname" placeholder="Rohan Gupta" required style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-navy-900);">
+                    </div>
+                    <div>
+                      <label for="signup-email" style="display: block; font-size: 0.72rem; margin-bottom: 0.2rem; color: var(--color-navy-600);">Email</label>
+                      <input type="email" id="signup-email" placeholder="rohan@example.com" required style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-navy-900);">
+                    </div>
+                    <div>
+                      <label for="signup-password" style="display: block; font-size: 0.72rem; margin-bottom: 0.2rem; color: var(--color-navy-600);">Password</label>
+                      <input type="password" id="signup-password" placeholder="Min 8 chars" required style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-navy-900);">
+                    </div>
+                    <div>
+                      <label for="signup-family" style="display: block; font-size: 0.72rem; margin-bottom: 0.2rem; color: var(--color-navy-600);">Family Name</label>
+                      <input type="text" id="signup-family" placeholder="Gupta Family" required style="width: 100%; padding: 0.35rem 0.5rem; font-size: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-navy-900);">
+                    </div>
+                    <div>
+                      <button type="submit" class="btn btn-sm btn-primary" style="font-size: 0.75rem; white-space: nowrap; height: 30px;">Create Account</button>
                     </div>
                   </form>
                 </div>
@@ -1520,6 +1566,62 @@
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-close-modal="schedule-apt-modal">Cancel</button>
           <button type="submit" class="btn btn-primary">Schedule Consultation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Prescription -->
+  <div id="add-prescription-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="rx-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="rx-modal-title">Schedule New Prescription</h3>
+        <button class="modal-close-btn" data-close-modal="add-prescription-modal" aria-label="Close dialog">✕</button>
+      </div>
+      <form id="add-prescription-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="modal-rx-member">Family Member</label>
+            <select id="modal-rx-member" required>
+              <option value="prof_ramesh_101">Ramesh Sharma (Grandfather)</option>
+              <option value="prof_sunita_102">Sunita Sharma (Mother)</option>
+              <option value="prof_anil_103">Anil Sharma (Self)</option>
+              <option value="prof_ananya_104">Ananya Sharma (Child)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="modal-rx-name">Medication Name</label>
+            <input type="text" id="modal-rx-name" placeholder="e.g. Telmisartan" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-rx-dosage">Dosage</label>
+            <input type="text" id="modal-rx-dosage" placeholder="e.g. 40mg (1 Tablet)" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-rx-time">Scheduled Timing</label>
+            <input type="text" id="modal-rx-time" placeholder="e.g. 08:30 AM (Morning)" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-rx-frequency">Frequency</label>
+            <select id="modal-rx-frequency" required>
+              <option value="Once Daily">Once Daily</option>
+              <option value="Twice Daily">Twice Daily</option>
+              <option value="Thrice Daily">Thrice Daily</option>
+              <option value="As Needed (PRN)">As Needed (PRN)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="modal-rx-refill">Refill Days Remaining</label>
+            <input type="number" id="modal-rx-refill" min="1" max="90" value="30" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-rx-instructions">Instructions</label>
+            <input type="text" id="modal-rx-instructions" placeholder="e.g. Take with warm water after breakfast">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="add-prescription-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Prescription</button>
         </div>
       </form>
     </div>
