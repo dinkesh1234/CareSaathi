@@ -16,7 +16,8 @@ from app.schemas import (
     AIChatResponse,
     FamilyMemberProfile,
 )
-from app.services.ai_service import DISCLAIMER_TEXT, ai_assistant_service
+from app.services.ai_service import DISCLAIMER_TEXT
+from app.services.gemini_service import get_ai_service
 
 router = APIRouter(prefix="/api/ai", tags=["AI Assistant"])
 
@@ -59,7 +60,8 @@ async def chat_with_assistant(
     user = _resolve_authenticated_user(user_id)
     authorized_profiles = _get_authorized_profiles_for_user(user)
 
-    response = ai_assistant_service.generate_response(
+    ai_service = get_ai_service()
+    response = ai_service.generate_response(
         user=user,
         authorized_profiles=authorized_profiles,
         query=request.message,
@@ -71,10 +73,11 @@ async def chat_with_assistant(
 @router.get("/capabilities", response_model=AICapabilitiesResponse)
 async def get_ai_capabilities() -> AICapabilitiesResponse:
     """Discover AI Assistant capabilities, readiness state, and clinical boundaries."""
+    ai_service = get_ai_service()
     return AICapabilitiesResponse(
         status="operational",
-        provider="mock-care-assistant-v1",
-        is_mock=True,
+        provider=ai_service.provider_id,
+        is_mock="mock" in ai_service.provider_id,
         capabilities=[
             "Daily Family Care Summary",
             "Authorized Family Health Summary",

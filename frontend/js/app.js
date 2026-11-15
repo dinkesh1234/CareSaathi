@@ -709,10 +709,32 @@ function setupEventListeners() {
     }
   });
 
-  // 20. Modal Handlers
+  // 20. External API Integrations Event Handlers
+  const refreshIntegBtn = document.getElementById('refresh-integrations-btn');
+  if (refreshIntegBtn) {
+    refreshIntegBtn.addEventListener('click', () => {
+      fetchAPIIntegrationsStatus(true);
+    });
+  }
+
+  const googleLoginBtn = document.getElementById('google-login-btn');
+  if (googleLoginBtn) {
+    googleLoginBtn.addEventListener('click', () => {
+      initiateGoogleLogin();
+    });
+  }
+
+  const testEmailBtn = document.getElementById('send-test-email-btn');
+  if (testEmailBtn) {
+    testEmailBtn.addEventListener('click', () => {
+      triggerTestEmail();
+    });
+  }
+
+  // 21. Modal Handlers
   setupModals();
 
-  // 21. Hash navigation listener
+  // 22. Hash navigation listener
   window.addEventListener('popstate', () => {
     const hash = window.location.hash.replace('#', '');
     if (hash) switchView(hash);
@@ -1627,6 +1649,223 @@ async function sendAIMessage(queryText) {
 }
 
 /**
+ * ============================================================================
+ * EXTERNAL API INTEGRATIONS CONTROLLER
+ * ============================================================================
+ */
+
+/**
+ * Fetch and Render Live Status of All 6 External APIs
+ * @param {boolean} [showFeedback=false]
+ */
+async function fetchAPIIntegrationsStatus(showFeedback = false) {
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/integrations/status`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const svcs = data.services || {};
+
+    // 1. Supabase
+    const spBadge = document.getElementById('integ-status-supabase');
+    const spDesc = document.getElementById('integ-desc-supabase');
+    const spCard = document.getElementById('integ-card-supabase');
+    if (spBadge && spDesc) {
+      if (svcs.supabase?.connected) {
+        spBadge.textContent = 'Connected ✅';
+        spBadge.className = 'badge badge-routine';
+        if (spCard) spCard.style.borderLeftColor = 'var(--color-teal-500)';
+      } else if (svcs.supabase?.configured) {
+        spBadge.textContent = 'Disconnected ⚠️';
+        spBadge.className = 'badge badge-urgent';
+        if (spCard) spCard.style.borderLeftColor = 'var(--color-danger-border)';
+      } else {
+        spBadge.textContent = 'Not Configured ⚠️';
+        spBadge.className = 'badge';
+        if (spCard) spCard.style.borderLeftColor = 'var(--color-navy-300)';
+      }
+      spDesc.textContent = svcs.supabase?.message || 'Database status reported';
+    }
+
+    // 2. Google OAuth
+    const goBadge = document.getElementById('integ-status-google-oauth');
+    const goDesc = document.getElementById('integ-desc-google-oauth');
+    const goCard = document.getElementById('integ-card-google-oauth');
+    if (goBadge && goDesc) {
+      if (svcs.google_oauth?.configured) {
+        goBadge.textContent = 'Configured ✅';
+        goBadge.className = 'badge badge-routine';
+        if (goCard) goCard.style.borderLeftColor = 'var(--color-teal-500)';
+      } else {
+        goBadge.textContent = 'Not Configured ⚠️';
+        goBadge.className = 'badge';
+        if (goCard) goCard.style.borderLeftColor = 'var(--color-navy-300)';
+      }
+      goDesc.textContent = svcs.google_oauth?.message || 'OAuth status reported';
+    }
+
+    // 3. Google Calendar
+    const gcBadge = document.getElementById('integ-status-google-calendar');
+    const gcDesc = document.getElementById('integ-desc-google-calendar');
+    const gcCard = document.getElementById('integ-card-google-calendar');
+    if (gcBadge && gcDesc) {
+      if (svcs.google_calendar?.connected) {
+        gcBadge.textContent = 'Connected ✅';
+        gcBadge.className = 'badge badge-routine';
+        if (gcCard) gcCard.style.borderLeftColor = 'var(--color-teal-500)';
+      } else if (svcs.google_calendar?.configured) {
+        gcBadge.textContent = 'Ready (Awaiting Auth) ⏳';
+        gcBadge.className = 'badge badge-routine';
+        if (gcCard) gcCard.style.borderLeftColor = 'var(--color-teal-500)';
+      } else {
+        gcBadge.textContent = 'Not Configured ⚠️';
+        gcBadge.className = 'badge';
+        if (gcCard) gcCard.style.borderLeftColor = 'var(--color-navy-300)';
+      }
+      gcDesc.textContent = svcs.google_calendar?.message || 'Calendar status reported';
+    }
+
+    // 4. Gemini AI
+    const gmBadge = document.getElementById('integ-status-gemini');
+    const gmDesc = document.getElementById('integ-desc-gemini');
+    const gmCard = document.getElementById('integ-card-gemini');
+    if (gmBadge && gmDesc) {
+      if (svcs.gemini?.configured && !svcs.gemini?.is_mock) {
+        gmBadge.textContent = 'Connected (Gemini 2.5) ✨';
+        gmBadge.className = 'badge badge-routine';
+        if (gmCard) gmCard.style.borderLeftColor = 'var(--color-teal-500)';
+      } else {
+        gmBadge.textContent = 'Mock Active (Fallback) 🤖';
+        gmBadge.className = 'badge';
+        if (gmCard) gmCard.style.borderLeftColor = 'var(--color-navy-400)';
+      }
+      gmDesc.textContent = svcs.gemini?.message || 'AI model status reported';
+    }
+
+    // 5. Resend
+    const rsBadge = document.getElementById('integ-status-resend');
+    const rsDesc = document.getElementById('integ-desc-resend');
+    const rsCard = document.getElementById('integ-card-resend');
+    if (rsBadge && rsDesc) {
+      if (svcs.resend?.configured) {
+        rsBadge.textContent = 'Configured ✅';
+        rsBadge.className = 'badge badge-routine';
+        if (rsCard) rsCard.style.borderLeftColor = 'var(--color-teal-500)';
+      } else {
+        rsBadge.textContent = 'Not Configured ⚠️';
+        rsBadge.className = 'badge';
+        if (rsCard) rsCard.style.borderLeftColor = 'var(--color-navy-300)';
+      }
+      rsDesc.textContent = svcs.resend?.message || 'Email delivery status reported';
+    }
+
+    // 6. Google Health Connect Adapter
+    const ghBadge = document.getElementById('integ-status-google-health');
+    const ghDesc = document.getElementById('integ-desc-google-health');
+    const ghCard = document.getElementById('integ-card-google-health');
+    if (ghBadge && ghDesc) {
+      ghBadge.textContent = 'Adapter Ready (Awaiting Bridge) ⏳';
+      ghBadge.className = 'badge';
+      if (ghCard) ghCard.style.borderLeftColor = 'var(--color-teal-700)';
+      ghDesc.textContent = svcs.google_health?.message || 'Health Connect adapter active';
+    }
+
+    if (showFeedback) {
+      alert('Integration statuses refreshed from CareSaathi backend.');
+    }
+  } catch (err) {
+    console.error('Failed to fetch integrations status:', err);
+    if (showFeedback) {
+      alert(`Could not retrieve integration status: ${err.message}`);
+    }
+  }
+}
+
+/**
+ * Initiate Google OAuth 2.0 Login Flow
+ */
+async function initiateGoogleLogin() {
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/google/url`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      alert(`Google OAuth Error: ${err?.detail || 'OAuth service unavailable.'}`);
+      return;
+    }
+    const data = await res.json();
+    if (data.authorization_url) {
+      window.location.href = data.authorization_url;
+    }
+  } catch (err) {
+    alert(`Failed to start Google sign-in: ${err.message}`);
+  }
+}
+
+/**
+ * Trigger Test Email Notification via Resend API
+ */
+async function triggerTestEmail() {
+  const recipient = prompt(
+    'Enter destination email for CareSaathi test alert:',
+    appState.currentUser ? appState.currentUser.email : 'test@example.com'
+  );
+  if (!recipient) return;
+
+  try {
+    const res = await fetch(`${CONFIG.API_BASE_URL}/api/integrations/test-email`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${appState.activeToken}`,
+      },
+      body: JSON.stringify({
+        recipient_email: recipient.trim(),
+        notification_type: 'medication',
+      }),
+    });
+
+    const data = await res.json();
+    if (data.success) {
+      alert(`✅ Sample Alert Dispatched!\n\nEmail ID: ${data.email_id || 'N/A'}\nRecipient: ${data.recipient}`);
+      logActivity(`Dispatched test email to ${recipient}`, 'Just now • Resend Integration', '📧');
+    } else {
+      alert(`Resend Notification Status:\n\n${data.message || data.error || 'Delivery failed'}`);
+    }
+  } catch (err) {
+    alert(`Error: ${err.message}`);
+  }
+}
+
+/**
+ * Handle Google OAuth Redirect Return Parameters
+ */
+function handleOAuthRedirectCallback() {
+  const hash = window.location.hash || '';
+  const search = window.location.search || '';
+  const combined = search + (hash.includes('?') ? '&' + hash.split('?')[1] : '');
+
+  if (combined.includes('oauth=success')) {
+    const params = new URLSearchParams(combined);
+    const token = params.get('token');
+    const email = params.get('email');
+    const userId = params.get('user_id');
+
+    if (token) {
+      appState.activeToken = token;
+      if (userId) appState.activeUserId = userId;
+      logActivity(`Authenticated via Google OAuth (${email || 'Google Account'})`, 'Just now • Google Identity', '🌐');
+      alert(`🎉 Google OAuth Successful!\n\nAccount linked: ${email || 'Google Account'}\nCareSaathi session token activated.`);
+      history.replaceState(null, '', '#settings');
+      fetchAPIIntegrationsStatus();
+    }
+  } else if (combined.includes('oauth_error=')) {
+    const params = new URLSearchParams(combined);
+    const err = params.get('oauth_error');
+    alert(`Google Authentication Notice: ${err}`);
+    history.replaceState(null, '', '#settings');
+  }
+}
+
+/**
  * Initialize Application
  */
 document.addEventListener('DOMContentLoaded', () => {
@@ -1636,8 +1875,14 @@ document.addEventListener('DOMContentLoaded', () => {
   initTheme();
   initPrivacyMode();
 
+  // Check for Google OAuth callback parameters
+  handleOAuthRedirectCallback();
+
   // Load Demo Authentication Tokens and Family Profiles
   fetchDemoTokens();
+
+  // Fetch Live Status of External API Integrations
+  fetchAPIIntegrationsStatus();
 
   // Route to initial view based on URL hash
   const initialHash = window.location.hash.replace('#', '');

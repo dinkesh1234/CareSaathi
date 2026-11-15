@@ -1242,6 +1242,95 @@
                 <div>Interactive Swagger Docs: <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener noreferrer">http://127.0.0.1:8000/docs &nearr;</a></div>
               </div>
             </div>
+
+            <!-- External API Integrations & Connectivity -->
+            <div class="settings-group" id="settings-integrations-group">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem; flex-wrap: wrap; gap: 0.5rem;">
+                <div>
+                  <h3 style="margin-bottom: 0.25rem;">External API Integrations &amp; Cloud Services</h3>
+                  <p style="margin-bottom: 0;">Verified backend connectivity for Supabase, Google OAuth, Calendar, Gemini, Resend, and Health Connect</p>
+                </div>
+                <button type="button" class="btn btn-sm btn-secondary" id="refresh-integrations-btn">🔄 Check Integration Status</button>
+              </div>
+
+              <div class="integrations-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 1rem;">
+                <!-- 1. Supabase -->
+                <div class="card" style="margin-bottom: 0; padding: 1.15rem; border-left: 4px solid var(--color-navy-300);" id="integ-card-supabase">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <div>
+                      <strong style="display: block; font-size: 0.95rem; color: var(--color-navy-900);">⚡ Supabase PostgreSQL</strong>
+                      <span style="font-size: 0.75rem; color: var(--color-navy-500);">Database &amp; Row Level Security</span>
+                    </div>
+                    <span class="badge" id="integ-status-supabase" style="font-size: 0.75rem;">Checking...</span>
+                  </div>
+                  <p style="font-size: 0.8rem; color: var(--color-navy-600); margin: 0;" id="integ-desc-supabase">Inspecting database connection...</p>
+                </div>
+
+                <!-- 2. Google OAuth 2.0 -->
+                <div class="card" style="margin-bottom: 0; padding: 1.15rem; border-left: 4px solid var(--color-teal-500);" id="integ-card-google-oauth">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <div>
+                      <strong style="display: block; font-size: 0.95rem; color: var(--color-navy-900);">🔐 Google OAuth 2.0</strong>
+                      <span style="font-size: 0.75rem; color: var(--color-navy-500);">Identity &amp; Authorization</span>
+                    </div>
+                    <span class="badge" id="integ-status-google-oauth" style="font-size: 0.75rem;">Checking...</span>
+                  </div>
+                  <p style="font-size: 0.8rem; color: var(--color-navy-600); margin-bottom: 0.75rem;" id="integ-desc-google-oauth">Inspecting credentials...</p>
+                  <button type="button" id="google-login-btn" class="btn btn-sm btn-secondary" style="display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.75rem;">
+                    <span>🌐 Sign in with Google</span>
+                  </button>
+                </div>
+
+                <!-- 3. Google Calendar API -->
+                <div class="card" style="margin-bottom: 0; padding: 1.15rem; border-left: 4px solid var(--color-navy-300);" id="integ-card-google-calendar">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <div>
+                      <strong style="display: block; font-size: 0.95rem; color: var(--color-navy-900);">📅 Google Calendar API</strong>
+                      <span style="font-size: 0.75rem; color: var(--color-navy-500);">Appointment Synchronization</span>
+                    </div>
+                    <span class="badge" id="integ-status-google-calendar" style="font-size: 0.75rem;">Checking...</span>
+                  </div>
+                  <p style="font-size: 0.8rem; color: var(--color-navy-600); margin: 0;" id="integ-desc-google-calendar">Inspecting calendar sync...</p>
+                </div>
+
+                <!-- 4. Google Gemini AI -->
+                <div class="card" style="margin-bottom: 0; padding: 1.15rem; border-left: 4px solid var(--color-navy-300);" id="integ-card-gemini">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <div>
+                      <strong style="display: block; font-size: 0.95rem; color: var(--color-navy-900);">✨ Google Gemini AI</strong>
+                      <span style="font-size: 0.75rem; color: var(--color-navy-500);">Care Coordination Briefs</span>
+                    </div>
+                    <span class="badge" id="integ-status-gemini" style="font-size: 0.75rem;">Checking...</span>
+                  </div>
+                  <p style="font-size: 0.8rem; color: var(--color-navy-600); margin: 0;" id="integ-desc-gemini">Inspecting AI model status...</p>
+                </div>
+
+                <!-- 5. Resend Email Notifications -->
+                <div class="card" style="margin-bottom: 0; padding: 1.15rem; border-left: 4px solid var(--color-navy-300);" id="integ-card-resend">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <div>
+                      <strong style="display: block; font-size: 0.95rem; color: var(--color-navy-900);">📧 Resend Email API</strong>
+                      <span style="font-size: 0.75rem; color: var(--color-navy-500);">Medication &amp; Appointment Alerts</span>
+                    </div>
+                    <span class="badge" id="integ-status-resend" style="font-size: 0.75rem;">Checking...</span>
+                  </div>
+                  <p style="font-size: 0.8rem; color: var(--color-navy-600); margin-bottom: 0.75rem;" id="integ-desc-resend">Inspecting email delivery...</p>
+                  <button type="button" class="btn btn-sm btn-secondary" id="send-test-email-btn" style="font-size: 0.75rem;">✉️ Send Sample Alert</button>
+                </div>
+
+                <!-- 6. Google Health Connect Adapter -->
+                <div class="card" style="margin-bottom: 0; padding: 1.15rem; border-left: 4px solid var(--color-navy-300);" id="integ-card-google-health">
+                  <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                    <div>
+                      <strong style="display: block; font-size: 0.95rem; color: var(--color-navy-900);">🩺 Google Health Connect</strong>
+                      <span style="font-size: 0.75rem; color: var(--color-navy-500);">Sensor Vitals Integration Adapter</span>
+                    </div>
+                    <span class="badge" id="integ-status-google-health" style="font-size: 0.75rem;">Checking...</span>
+                  </div>
+                  <p style="font-size: 0.8rem; color: var(--color-navy-600); margin: 0;" id="integ-desc-google-health">Adapter ready (awaiting companion mobile sync bridge)</p>
+                </div>
+              </div>
+            </div>
           </div>
 
 
