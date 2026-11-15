@@ -1,0 +1,1582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CareSaathi — Family Health & Care Coordination Platform</title>
+  <meta name="description" content="CareSaathi is an open, family-centric health and care coordination dashboard for managing family vitals, medication adherence, appointments, and care circle responsibilities.">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
+</head>
+<body>
+
+  <div class="app-container">
+    <!-- Backdrop for Mobile Sidebar -->
+    <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true"></div>
+
+    <!-- ==========================================================================
+         1. Left Sidebar Navigation
+         ========================================================================== -->
+    <aside id="app-sidebar" class="app-sidebar" aria-label="Main Application Navigation">
+      <!-- Sidebar Header -->
+      <div class="sidebar-header">
+        <a href="#dashboard" class="sidebar-logo-link" aria-label="CareSaathi Home">
+          <img src="assets/logo.svg" alt="CareSaathi Logo" class="sidebar-logo">
+        </a>
+        <button id="sidebar-close-btn" class="sidebar-close-btn" aria-label="Close navigation sidebar">✕</button>
+      </div>
+
+      <!-- Family Circle Context Badge -->
+      <div class="sidebar-family-context">
+        <div class="family-badge">
+          <span class="family-icon" aria-hidden="true">👨‍👩‍👧‍👦</span>
+          <div>
+            <strong class="family-name">Sharma Care Circle</strong>
+            <span class="family-role">4 Family Members</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Primary Navigation Links (12 sections) -->
+      <nav class="sidebar-nav" aria-label="Sidebar Menu">
+        <ul class="nav-list" role="menubar">
+          <li class="nav-item" role="none">
+            <button class="nav-link active" data-view="dashboard" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"></rect><rect x="14" y="3" width="7" height="5" rx="1"></rect><rect x="14" y="12" width="7" height="9" rx="1"></rect><rect x="3" y="16" width="7" height="5" rx="1"></rect></svg>
+              </span>
+              <span>Dashboard</span>
+            </button>
+          </li>
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="family-members" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              </span>
+              <span>Family Members</span>
+              <span class="nav-badge count">4</span>
+            </button>
+          </li>
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="health-profiles" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+              </span>
+              <span>Health Profiles</span>
+            </button>
+          </li>
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="medication-center" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"></path><path d="m8.5 8.5 7 7"></path></svg>
+              </span>
+              <span>Medication Center</span>
+              <span id="nav-med-due-badge" class="nav-badge due">1 Due</span>
+            </button>
+          </li>
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="appointments" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              </span>
+              <span>Appointments</span>
+              <span class="nav-badge count">2 Up</span>
+            </button>
+          </li>
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="health-connect" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M18 10h-1.26A8 8 0 1 0 9 20h9a5 5 0 0 0 0-10z"></path></svg>
+              </span>
+              <span>Health Connect</span>
+            </button>
+          </li>
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="safety-network" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              </span>
+              <span>Family Safety Network</span>
+            </button>
+          </li>
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="care-continuity" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+              </span>
+              <span>Care Continuity Center</span>
+            </button>
+          </li>
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="family-hub" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+              </span>
+              <span>Family Hub</span>
+            </button>
+          </li>
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="ai-assistant" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10a9.96 9.96 0 0 1-4.587-1.11L3 22l1.11-4.413A9.96 9.96 0 0 1 2 12C2 6.477 6.477 2 12 2z"></path><path d="m9 12 2 2 4-4"></path></svg>
+              </span>
+              <span>AI Assistant</span>
+              <span class="nav-badge" style="background-color: var(--color-teal-100); color: var(--color-teal-800); border: 1px solid var(--color-teal-300);">Preview</span>
+            </button>
+          </li>
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="notifications" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+              </span>
+              <span>Notifications</span>
+              <span id="unread-sidebar-badge" class="nav-badge unread">3</span>
+            </button>
+          </li>
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="activity-timeline" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </span>
+              <span>Activity Timeline</span>
+            </button>
+          </li>
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="settings" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+              </span>
+              <span>Settings &amp; Privacy</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- Sidebar Footer / Live Backend Health Status -->
+      <div class="sidebar-footer">
+        <div id="sidebar-backend-pill" class="backend-pill checking" title="FastAPI Backend Health Status">
+          <span class="status-dot"></span>
+          <span id="sidebar-backend-text">FastAPI: Connecting...</span>
+        </div>
+        <div class="demo-tag">Fictional Demo Data</div>
+      </div>
+    </aside>
+
+    <!-- ==========================================================================
+         2. Main Application Wrapper
+         ========================================================================== -->
+    <div class="app-main-wrapper">
+      <!-- Top Navigation Bar -->
+      <header class="app-topnav">
+        <div class="topnav-left">
+          <button id="sidebar-toggle-btn" class="hamburger-btn" aria-label="Toggle navigation menu">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+          </button>
+          <div class="search-box">
+            <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            <input type="text" id="global-search-input" placeholder="Search records, medications, appointments..." aria-label="Search Dashboard">
+          </div>
+        </div>
+
+        <div class="topnav-right">
+          <!-- Role & Identity Switcher (Demonstrates Backend RBAC) -->
+          <div class="role-selector-dropdown" title="Switch User Identity to test backend-enforced RBAC in real time">
+            <select id="auth-role-select" aria-label="Switch active user role for RBAC demonstration">
+              <option value="user_anil_01">👑 Anil Sharma (Family Owner)</option>
+              <option value="user_sunita_02">🛡️ Sunita Sharma (Parent/Guardian)</option>
+              <option value="user_caregiver_priya_03">🩺 Nurse Priya (Caregiver)</option>
+              <option value="user_rajesh_99">🚫 Rajesh Verma (Cross-Family Attacker)</option>
+            </select>
+          </div>
+
+          <!-- Family Member Filter -->
+          <div class="member-filter-dropdown">
+            <select id="member-focus-select" aria-label="Filter by family member">
+              <option value="all">Entire Family (All 4)</option>
+              <option value="ramesh">Ramesh (Grandfather)</option>
+              <option value="sunita">Sunita (Mother)</option>
+              <option value="anil">Anil (Father)</option>
+              <option value="ananya">Ananya (Daughter)</option>
+            </select>
+          </div>
+
+          <!-- Privacy Mode Shield Toggle -->
+          <button id="privacy-toggle-btn" class="privacy-toggle-btn active" title="Toggle Privacy Mode (Hide/Show sensitive health & contact data)" aria-label="Toggle Privacy Shield">
+            <span id="privacy-toggle-icon" aria-hidden="true">🛡️</span>
+            <span id="privacy-toggle-text">Privacy: ON</span>
+          </button>
+
+          <!-- Light / Dark Theme Toggle Button -->
+          <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Light / Dark Mode" aria-label="Switch between light and dark theme">
+            <span id="theme-toggle-icon" aria-hidden="true">🌙</span>
+          </button>
+
+          <!-- AI Assistant Quick Jump Pill -->
+          <button id="topnav-ai-btn" class="topnav-ai-pill" data-jump="ai-assistant" title="Open CareSaathi AI Care Assistant">
+            <span aria-hidden="true">✨</span>
+            <span>Ask AI</span>
+          </button>
+
+          <!-- Topbar Health Pill -->
+          <button id="topnav-health-btn" class="topnav-health checking" title="Click to view backend health check">
+            <span class="status-dot"></span>
+            <span id="topnav-health-text">API Online</span>
+          </button>
+
+          <!-- Notifications Button -->
+          <button id="quick-notifications-btn" class="icon-btn" aria-label="View notifications">
+            <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.73 21a2 2 0 0 1-3.46 0"></path></svg>
+            <span id="topnav-notif-dot" class="notification-badge-dot"></span>
+          </button>
+
+          <!-- User Profile -->
+          <div class="user-profile-pill" id="user-profile-pill" title="Current Authenticated User Profile & Role">
+            <div class="user-avatar" id="current-user-avatar">AS</div>
+            <div class="user-details">
+              <span class="user-name" id="current-user-name">Anil Sharma</span>
+              <span class="user-tag" id="current-user-role-badge">Family Owner</span>
+            </div>
+          </div>
+
+
+        </div>
+      </header>
+
+      <!-- App Content Area (Switchable Views) -->
+      <main id="app-content" class="app-content">
+
+        <!-- ======================================================================
+             VIEW 1: DASHBOARD OVERVIEW
+             ====================================================================== -->
+        <section id="view-dashboard" class="app-view active" aria-labelledby="view-dashboard-title">
+          <!-- Welcome Banner -->
+          <div class="welcome-banner">
+            <div class="welcome-inner">
+              <div class="welcome-text">
+                <h2 id="view-dashboard-title">Namaste, Anil! Here is your family care summary</h2>
+                <p>
+                  All 4 family members are active in the care circle. 1 medication dose is due this afternoon, and Ramesh's cardiology checkup is scheduled for tomorrow.
+                </p>
+              </div>
+              <div class="welcome-metrics">
+                <div class="metric-chip">
+                  <span class="metric-chip-val" id="chip-adherence">94%</span>
+                  <span class="metric-chip-lbl">7-Day Adherence</span>
+                </div>
+                <div class="metric-chip">
+                  <span class="metric-chip-val" id="chip-tasks">2</span>
+                  <span class="metric-chip-lbl">Tasks Due Today</span>
+                </div>
+                <div class="metric-chip">
+                  <span class="metric-chip-val">4/4</span>
+                  <span class="metric-chip-lbl">Vitals Logged</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- AI Assistant Quick Prompt Banner -->
+          <div class="card" style="margin-bottom: 1.5rem; background: linear-gradient(135deg, var(--color-surface), var(--color-teal-50)); border: 1px solid var(--color-teal-200); display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding: 1rem 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.85rem;">
+              <div style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, var(--color-teal-500), var(--color-teal-700)); color: white; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0;" aria-hidden="true">✨</div>
+              <div>
+                <strong style="font-size: 0.95rem; color: var(--color-navy-950);">Have a question about family medications or appointments?</strong>
+                <p style="font-size: 0.825rem; color: var(--color-navy-600); margin: 0.15rem 0 0 0;">Ask CareSaathi AI for instant summaries of authorized family records.</p>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-sm" data-jump="ai-assistant" style="display: inline-flex; align-items: center; gap: 0.4rem;">
+              <span>Ask AI Assistant &rarr;</span>
+            </button>
+          </div>
+
+
+
+          <!-- Family Member Overview Cards -->
+          <div class="section-subhead">
+            <h2>Family Members Overview</h2>
+            <button class="btn btn-sm btn-text" data-jump="family-members">Manage All Members &rarr;</button>
+          </div>
+
+          <div class="family-cards-grid">
+            <!-- Member 1: Ramesh -->
+            <article class="family-card" data-member="ramesh">
+              <div class="family-card-top">
+                <div class="member-avatar grandfather" aria-hidden="true">RS</div>
+                <div class="member-meta">
+                  <h3 class="member-name">Ramesh Sharma</h3>
+                  <div class="member-relation-age">Grandfather • 74 yrs</div>
+                  <span class="status-tag due">Medication Due (2:00 PM)</span>
+                </div>
+              </div>
+              <div class="family-card-metrics">
+                <span class="card-vital-label">Last Blood Pressure</span>
+                <span class="card-vital-value">128/82 mmHg</span>
+              </div>
+              <div class="family-card-footer">
+                <span style="font-size: 0.725rem; color: var(--color-navy-500);">Cardiology Care</span>
+                <button class="btn btn-sm btn-secondary" data-jump="health-profiles" data-member-target="ramesh">View Profile</button>
+              </div>
+            </article>
+
+            <!-- Member 2: Sunita -->
+            <article class="family-card" data-member="sunita">
+              <div class="family-card-top">
+                <div class="member-avatar mother" aria-hidden="true">SS</div>
+                <div class="member-meta">
+                  <h3 class="member-name">Sunita Sharma</h3>
+                  <div class="member-relation-age">Mother • 48 yrs</div>
+                  <span class="status-tag stable">Vitals Stable</span>
+                </div>
+              </div>
+              <div class="family-card-metrics">
+                <span class="card-vital-label">Morning Thyroid Med</span>
+                <span class="card-vital-value" style="color: var(--color-success-text);">Taken (08:15 AM)</span>
+              </div>
+              <div class="family-card-footer">
+                <span style="font-size: 0.725rem; color: var(--color-navy-500);">Endocrine Health</span>
+                <button class="btn btn-sm btn-secondary" data-jump="health-profiles" data-member-target="sunita">View Profile</button>
+              </div>
+            </article>
+
+            <!-- Member 3: Anil -->
+            <article class="family-card" data-member="anil">
+              <div class="family-card-top">
+                <div class="member-avatar father" aria-hidden="true">AS</div>
+                <div class="member-meta">
+                  <h3 class="member-name">Anil Sharma</h3>
+                  <div class="member-relation-age">Father (You) • 50 yrs</div>
+                  <span class="status-tag scheduled">Executive Checkup</span>
+                </div>
+              </div>
+              <div class="family-card-metrics">
+                <span class="card-vital-label">Resting Heart Rate</span>
+                <span class="card-vital-value">72 bpm</span>
+              </div>
+              <div class="family-card-footer">
+                <span style="font-size: 0.725rem; color: var(--color-navy-500);">Primary Coordinator</span>
+                <button class="btn btn-sm btn-secondary" data-jump="health-profiles" data-member-target="anil">View Profile</button>
+              </div>
+            </article>
+
+            <!-- Member 4: Ananya -->
+            <article class="family-card" data-member="ananya">
+              <div class="family-card-top">
+                <div class="member-avatar daughter" aria-hidden="true">AS</div>
+                <div class="member-meta">
+                  <h3 class="member-name">Ananya Sharma</h3>
+                  <div class="member-relation-age">Daughter • 17 yrs</div>
+                  <span class="status-tag stable">Wellness Current</span>
+                </div>
+              </div>
+              <div class="family-card-metrics">
+                <span class="card-vital-label">Immunization</span>
+                <span class="card-vital-value" style="color: var(--color-success-text);">Up to date</span>
+              </div>
+              <div class="family-card-footer">
+                <span style="font-size: 0.725rem; color: var(--color-navy-500);">High School Student</span>
+                <button class="btn btn-sm btn-secondary" data-jump="health-profiles" data-member-target="ananya">View Profile</button>
+              </div>
+            </article>
+          </div>
+
+          <!-- Two Column Main Dashboard Section -->
+          <div class="dashboard-grid-2col">
+            <!-- Left Column: Upcoming Appointments + Medication Schedule + Care Responsibilities -->
+            <div class="dashboard-column">
+              <!-- Medication Schedule Overview -->
+              <div class="card">
+                <div class="card-header">
+                  <h3>Today's Medication Schedule</h3>
+                  <button class="btn btn-sm btn-secondary" data-jump="medication-center">View Full Schedule &rarr;</button>
+                </div>
+                <div class="med-timeline" id="dashboard-med-timeline">
+                  <!-- Med Item 1 -->
+                  <div class="med-item taken" data-med-id="med-1">
+                    <div class="med-info">
+                      <span class="med-pill-icon" aria-hidden="true">💊</span>
+                      <div>
+                        <div class="med-name">Amlodipine 5mg</div>
+                        <div class="med-sub">Ramesh • Morning with water</div>
+                      </div>
+                    </div>
+                    <div class="med-action">
+                      <span class="time-badge">08:00 AM</span>
+                      <button class="btn btn-sm btn-secondary toggle-med-btn" data-med-id="med-1">Taken ✅</button>
+                    </div>
+                  </div>
+
+                  <!-- Med Item 2 -->
+                  <div class="med-item" data-med-id="med-2">
+                    <div class="med-info">
+                      <span class="med-pill-icon" aria-hidden="true">💊</span>
+                      <div>
+                        <div class="med-name">Metformin 500mg</div>
+                        <div class="med-sub">Ramesh • Post-Lunch with meal</div>
+                      </div>
+                    </div>
+                    <div class="med-action">
+                      <span class="time-badge" style="color: var(--color-warning-text); background-color: var(--color-warning-bg);">02:00 PM (Due)</span>
+                      <button class="btn btn-sm btn-primary toggle-med-btn" data-med-id="med-2">Mark Taken</button>
+                    </div>
+                  </div>
+
+                  <!-- Med Item 3 -->
+                  <div class="med-item taken" data-med-id="med-3">
+                    <div class="med-info">
+                      <span class="med-pill-icon" aria-hidden="true">💊</span>
+                      <div>
+                        <div class="med-name">Levothyroxine 50mcg</div>
+                        <div class="med-sub">Sunita • Empty stomach morning</div>
+                      </div>
+                    </div>
+                    <div class="med-action">
+                      <span class="time-badge">07:30 AM</span>
+                      <button class="btn btn-sm btn-secondary toggle-med-btn" data-med-id="med-3">Taken ✅</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pending Care Responsibilities (Care Circle Tasks) -->
+              <div class="card">
+                <div class="card-header">
+                  <h3>Pending Care Responsibilities (<span id="task-pending-count">2</span>)</h3>
+                  <button class="btn btn-sm btn-secondary" id="open-add-task-btn">+ New Task</button>
+                </div>
+                <ul class="task-checklist" id="dashboard-task-list">
+                  <li class="task-item" data-task-id="task-1">
+                    <label class="task-label-group">
+                      <input type="checkbox" class="task-checkbox" data-task-id="task-1">
+                      <span class="task-title">Collect Amlodipine refill prescription from Apollo Pharmacy</span>
+                    </label>
+                    <span class="task-assignee">Assigned: Anil</span>
+                  </li>
+                  <li class="task-item" data-task-id="task-2">
+                    <label class="task-label-group">
+                      <input type="checkbox" class="task-checkbox" data-task-id="task-2">
+                      <span class="task-title">Record Ramesh's post-lunch blood pressure reading</span>
+                    </label>
+                    <span class="task-assignee">Assigned: Sunita</span>
+                  </li>
+                  <li class="task-item completed" data-task-id="task-3">
+                    <label class="task-label-group">
+                      <input type="checkbox" class="task-checkbox" checked data-task-id="task-3">
+                      <span class="task-title">Confirm Ananya's annual vision checkup booking</span>
+                    </label>
+                    <span class="task-assignee">Completed</span>
+                  </li>
+                </ul>
+
+                <!-- Inline Task Quick Add Form -->
+                <form id="inline-add-task-form" class="quick-add-task-box">
+                  <input type="text" id="new-task-input" placeholder="Add a new family caregiving task..." required>
+                  <button type="submit" class="btn btn-primary btn-sm">Add</button>
+                </form>
+              </div>
+
+              <!-- Upcoming Appointments Section -->
+              <div class="card">
+                <div class="card-header">
+                  <h3>Upcoming Appointments</h3>
+                  <button class="btn btn-sm btn-primary" id="open-schedule-apt-btn">+ Schedule</button>
+                </div>
+                <div class="appointment-list">
+                  <div class="appointment-item">
+                    <div class="appointment-date-badge">
+                      <span class="apt-day">16</span>
+                      <span class="apt-month">Nov</span>
+                    </div>
+                    <div class="appointment-details">
+                      <div class="apt-title">Cardiology Followup Review</div>
+                      <div class="apt-doctor">Dr. Vikram Mehta • Apollo Heart Center (In-Person)</div>
+                      <span class="apt-for">Patient: Ramesh Sharma • Tomorrow, 10:30 AM</span>
+                    </div>
+                    <button class="btn btn-sm btn-secondary apt-prep-btn" data-apt="mehta">Prep Notes</button>
+                  </div>
+
+                  <div class="appointment-item">
+                    <div class="appointment-date-badge">
+                      <span class="apt-day">24</span>
+                      <span class="apt-month">Nov</span>
+                    </div>
+                    <div class="appointment-details">
+                      <div class="apt-title">Pediatric Vision &amp; Refraction Exam</div>
+                      <div class="apt-doctor">Dr. Radhika Iyer • City Eye Clinic (Consultation)</div>
+                      <span class="apt-for">Patient: Ananya Sharma • 04:00 PM</span>
+                    </div>
+                    <button class="btn btn-sm btn-secondary apt-prep-btn" data-apt="iyer">Prep Notes</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Recent Activity Feed + Connected Health Devices + API Health Monitor -->
+            <div class="dashboard-column">
+              <!-- Recent Family Activity Widget -->
+              <div class="card">
+                <div class="card-header">
+                  <h3>Recent Family Care Activity</h3>
+                  <button class="btn btn-sm btn-text" data-jump="activity-timeline">View All &rarr;</button>
+                </div>
+                <ul class="activity-widget-list" id="dashboard-activity-list">
+                  <li class="activity-widget-item">
+                    <span class="activity-dot" aria-hidden="true">💊</span>
+                    <div class="activity-widget-content">
+                      <div class="activity-title">Sunita marked Morning Levothyroxine (50mcg) as taken</div>
+                      <div class="activity-time">Today, 08:15 AM • By Sunita</div>
+                    </div>
+                  </li>
+                  <li class="activity-widget-item">
+                    <span class="activity-dot" aria-hidden="true">🩺</span>
+                    <div class="activity-widget-content">
+                      <div class="activity-title">Anil logged Ramesh's morning blood pressure: 128/82 mmHg</div>
+                      <div class="activity-time">Today, 07:45 AM • By Anil</div>
+                    </div>
+                  </li>
+                  <li class="activity-widget-item">
+                    <span class="activity-dot" aria-hidden="true">📅</span>
+                    <div class="activity-widget-content">
+                      <div class="activity-title">Confirmed Dr. Mehta appointment for Ramesh on Nov 16</div>
+                      <div class="activity-time">Yesterday, 04:30 PM • Apollo Heart Center</div>
+                    </div>
+                  </li>
+                  <li class="activity-widget-item">
+                    <span class="activity-dot" aria-hidden="true">🛡️</span>
+                    <div class="activity-widget-content">
+                      <div class="activity-title">Emergency contact list verified and updated</div>
+                      <div class="activity-time">Nov 12, 11:00 AM • Safety Network</div>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Connected Health Devices (Simulated Roadmap Section) -->
+              <div class="card">
+                <div class="card-header">
+                  <h3>Connected Health Apps &amp; Devices</h3>
+                  <button class="btn btn-sm btn-secondary" data-jump="health-connect">Manage &rarr;</button>
+                </div>
+                <div class="disclaimer-banner">
+                  <strong>Simulated Device Hub</strong>: Displays upcoming biometric device bridges. No external medical claims or credentials required.
+                </div>
+                <div class="devices-grid">
+                  <div class="device-card">
+                    <span class="device-icon" aria-hidden="true">🩺</span>
+                    <span class="device-name">Omron BP Monitor</span>
+                    <span class="device-status paired">Paired (Bluetooth)</span>
+                  </div>
+                  <div class="device-card">
+                    <span class="device-icon" aria-hidden="true">🍎</span>
+                    <span class="device-name">Apple Health Bridge</span>
+                    <span class="device-status ready">Ready to Sync</span>
+                  </div>
+                  <div class="device-card">
+                    <span class="device-icon" aria-hidden="true">🤖</span>
+                    <span class="device-name">Health Connect (Android)</span>
+                    <span class="device-status ready">Ready to Sync</span>
+                  </div>
+                  <div class="device-card">
+                    <span class="device-icon" aria-hidden="true">🩸</span>
+                    <span class="device-name">Dexcom CGM Bridge</span>
+                    <span class="device-status ready">Roadmap</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Backend Connectivity Monitor Card -->
+              <div class="card">
+                <div class="card-header">
+                  <h3>FastAPI Service Connectivity</h3>
+                  <button id="refresh-api-btn" class="btn btn-sm btn-primary">Ping Health API</button>
+                </div>
+                <p style="font-size: 0.8rem; color: var(--color-navy-500); margin-bottom: 0.85rem;">
+                  Live communication bridge between this CareSaathi dashboard and Python backend:
+                </p>
+                <div style="background-color: var(--color-surface-alt); border-radius: var(--radius-md); padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 0.775rem;">
+                  <div>Endpoint: <strong style="color: var(--color-teal-700);">http://127.0.0.1:8000/api/health</strong></div>
+                  <div>Status: <span id="dash-api-status-text" style="font-weight: 700; color: var(--color-success-text);">Connected</span></div>
+                  <div>Latency: <span id="dash-api-latency">0 ms</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+
+        </section>
+
+        <!-- ======================================================================
+             VIEW 2: FAMILY MEMBERS
+             ====================================================================== -->
+        <section id="view-family-members" class="app-view" aria-labelledby="view-family-title">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1 id="view-family-title">Family Care Circle Members</h1>
+              <p>Manage family profiles, designated caregiver roles, and emergency information</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-primary" id="add-member-btn">+ Add Family Member</button>
+            </div>
+          </div>
+
+
+
+          <div class="table-responsive">
+            <table class="data-table" aria-label="Family Members Table">
+              <thead>
+                <tr>
+                  <th>Member</th>
+                  <th>Relationship</th>
+                  <th>Age</th>
+                  <th>Blood Group</th>
+                  <th>Primary Physician</th>
+                  <th>Emergency Contact</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="family-table-body">
+                <tr>
+                  <td><strong>Ramesh Sharma</strong></td>
+                  <td>Grandfather</td>
+                  <td>74 yrs</td>
+                  <td><span class="sensitive-data masked" data-masked-value="••" data-full-value="B+"><span class="val-display">••</span><button type="button" class="privacy-mask-btn" aria-label="Toggle blood group">👁️</button></span></td>
+                  <td>Dr. Vikram Mehta (Cardiology)</td>
+                  <td>Anil Sharma <span class="sensitive-data masked" data-masked-value="(+91 98765 •••••)" data-full-value="(+91 98765 43210)"><span class="val-display">(+91 98765 •••••)</span><button type="button" class="privacy-mask-btn" aria-label="Toggle contact visibility">👁️</button></span></td>
+                  <td><button class="btn btn-sm btn-secondary" data-jump="health-profiles" data-member-target="ramesh">Health Profile</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Sunita Sharma</strong></td>
+                  <td>Mother</td>
+                  <td>48 yrs</td>
+                  <td><span class="sensitive-data masked" data-masked-value="••" data-full-value="O+"><span class="val-display">••</span><button type="button" class="privacy-mask-btn" aria-label="Toggle blood group">👁️</button></span></td>
+                  <td>Dr. P. Deshmukh (Internal Med)</td>
+                  <td>Anil Sharma <span class="sensitive-data masked" data-masked-value="(+91 98765 •••••)" data-full-value="(+91 98765 43210)"><span class="val-display">(+91 98765 •••••)</span><button type="button" class="privacy-mask-btn" aria-label="Toggle contact visibility">👁️</button></span></td>
+                  <td><button class="btn btn-sm btn-secondary" data-jump="health-profiles" data-member-target="sunita">Health Profile</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Anil Sharma</strong></td>
+                  <td>Father (Primary Coordinator)</td>
+                  <td>50 yrs</td>
+                  <td><span class="sensitive-data masked" data-masked-value="••" data-full-value="B+"><span class="val-display">••</span><button type="button" class="privacy-mask-btn" aria-label="Toggle blood group">👁️</button></span></td>
+                  <td>Dr. K. Saxena (General)</td>
+                  <td>Sunita Sharma <span class="sensitive-data masked" data-masked-value="(+91 98765 •••••)" data-full-value="(+91 98765 43211)"><span class="val-display">(+91 98765 •••••)</span><button type="button" class="privacy-mask-btn" aria-label="Toggle contact visibility">👁️</button></span></td>
+                  <td><button class="btn btn-sm btn-secondary" data-jump="health-profiles" data-member-target="anil">Health Profile</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Ananya Sharma</strong></td>
+                  <td>Daughter</td>
+                  <td>17 yrs</td>
+                  <td><span class="sensitive-data masked" data-masked-value="••" data-full-value="O+"><span class="val-display">••</span><button type="button" class="privacy-mask-btn" aria-label="Toggle blood group">👁️</button></span></td>
+                  <td>Dr. Radhika Iyer (Pediatrics)</td>
+                  <td>Sunita Sharma <span class="sensitive-data masked" data-masked-value="(+91 98765 •••••)" data-full-value="(+91 98765 43211)"><span class="val-display">(+91 98765 •••••)</span><button type="button" class="privacy-mask-btn" aria-label="Toggle contact visibility">👁️</button></span></td>
+                  <td><button class="btn btn-sm btn-secondary" data-jump="health-profiles" data-member-target="ananya">Health Profile</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             VIEW 3: HEALTH PROFILES
+             ====================================================================== -->
+        <section id="view-health-profiles" class="app-view" aria-labelledby="view-profiles-title">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1 id="view-profiles-title">Family Health Profiles &amp; Vitals</h1>
+              <p>Longitudinal health records, allergy alerts, and doctor consultation summaries</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-secondary" id="print-health-summary-btn">🖨️ Export Doctor Brief</button>
+            </div>
+          </div>
+
+
+
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-header">
+              <h3>Member Profile Spotlight: Ramesh Sharma (Grandfather)</h3>
+              <span class="status-tag stable">Vitals Stable • Last Logged Today</span>
+            </div>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+              <div class="metric-box">
+                <div class="metric-label">Blood Pressure</div>
+                <div class="metric-value">128/82 mmHg <span style="font-size: 0.75rem; color: var(--color-success-text);">(Target &lt;130/85)</span></div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-label">Fasting Blood Glucose</div>
+                <div class="metric-value">114 mg/dL <span style="font-size: 0.75rem; color: var(--color-navy-500);">(Normal range)</span></div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-label">Known Allergies</div>
+                <div class="metric-value" style="color: var(--color-error-text);"><span class="sensitive-data masked" data-masked-value="••••••••••••" data-full-value="Penicillin (Severe)"><span class="val-display">••••••••••••</span><button type="button" class="privacy-mask-btn" aria-label="Toggle allergy visibility">👁️</button></span></div>
+              </div>
+              <div class="metric-box">
+                <div class="metric-label">Primary Diagnosis</div>
+                <div class="metric-value"><span class="sensitive-data masked" data-masked-value="••••••••••••" data-full-value="Hypertension (Controlled)"><span class="val-display">••••••••••••</span><button type="button" class="privacy-mask-btn" aria-label="Toggle diagnosis visibility">👁️</button></span></div>
+              </div>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--color-navy-600);">
+              <strong>Care Coordinator Note:</strong> Ramesh is adhering consistently to his morning Amlodipine regimen. Doctor Mehta has scheduled an echocardiogram review for tomorrow morning at Apollo Heart Center.
+            </p>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             VIEW 4: MEDICATION CENTER
+             ====================================================================== -->
+        <section id="view-medication-center" class="app-view" aria-labelledby="view-meds-title">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1 id="view-meds-title">Family Medication Center</h1>
+              <p>Prescription schedules, adherence tracker, and refill alerts across all family members</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-primary" id="add-prescription-btn">+ Add Prescription</button>
+            </div>
+          </div>
+
+
+
+          <div class="table-responsive">
+            <table class="data-table" aria-label="Prescription Medication Table">
+              <thead>
+                <tr>
+                  <th>Medication &amp; Dosage</th>
+                  <th>Member</th>
+                  <th>Timing</th>
+                  <th>Frequency</th>
+                  <th>Refill Left</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><strong>Amlodipine 5mg</strong></td>
+                  <td>Ramesh Sharma</td>
+                  <td>08:00 AM (Morning)</td>
+                  <td>Once Daily</td>
+                  <td>14 Days</td>
+                  <td><span class="status-tag stable">Taken Today</span></td>
+                  <td><button class="btn btn-sm btn-secondary" onclick="alert('Medication details: Amlodipine 5mg prescribed by Dr. Mehta.')">Details</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Metformin 500mg</strong></td>
+                  <td>Ramesh Sharma</td>
+                  <td>02:00 PM (Afternoon)</td>
+                  <td>Twice Daily</td>
+                  <td>8 Days (Refill Soon)</td>
+                  <td><span class="status-tag due">Due Post-Lunch</span></td>
+                  <td><button class="btn btn-sm btn-primary" onclick="alert('Dose recorded as taken.')">Mark Taken</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Levothyroxine 50mcg</strong></td>
+                  <td>Sunita Sharma</td>
+                  <td>07:30 AM (Morning)</td>
+                  <td>Once Daily</td>
+                  <td>22 Days</td>
+                  <td><span class="status-tag stable">Taken Today</span></td>
+                  <td><button class="btn btn-sm btn-secondary" onclick="alert('Medication details: Levothyroxine 50mcg prescribed by Dr. Deshmukh.')">Details</button></td>
+                </tr>
+                <tr>
+                  <td><strong>Multivitamin &amp; Zinc</strong></td>
+                  <td>Ananya Sharma</td>
+                  <td>09:00 PM (Night)</td>
+                  <td>Once Daily</td>
+                  <td>30 Days</td>
+                  <td><span class="status-tag scheduled">Upcoming</span></td>
+                  <td><button class="btn btn-sm btn-secondary" onclick="alert('Scheduled for 9:00 PM tonight.')">Details</button></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             VIEW 5: APPOINTMENTS
+             ====================================================================== -->
+        <section id="view-appointments" class="app-view" aria-labelledby="view-apt-title">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1 id="view-apt-title">Family Appointments &amp; Consultations</h1>
+              <p>Upcoming clinical consultations, doctor prep notes, and telemedicine bookings</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-primary" id="schedule-apt-view-btn">+ New Appointment</button>
+            </div>
+          </div>
+
+
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+            <div class="card">
+              <div class="card-header">
+                <h3>Cardiology Review (Tomorrow)</h3>
+                <span class="status-tag due">Confirmed</span>
+              </div>
+              <p><strong>Patient:</strong> Ramesh Sharma</p>
+              <p><strong>Doctor:</strong> Dr. Vikram Mehta, MD (Cardiology)</p>
+              <p><strong>Clinic:</strong> Apollo Heart Center, Block C</p>
+              <p><strong>Time:</strong> Tomorrow, 10:30 AM IST</p>
+              <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid var(--color-border); display: flex; gap: 0.5rem;">
+                <button class="btn btn-sm btn-primary" onclick="alert('Appointment details added to Google / Outlook Calendar.')">Add to Calendar</button>
+                <button class="btn btn-sm btn-secondary open-checklist-btn" data-doctor="Dr. Vikram Mehta, MD (Cardiology)" data-patient="Ramesh Sharma">Consultation Checklist</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Pediatric Eye Examination</h3>
+                <span class="status-tag scheduled">Scheduled</span>
+              </div>
+              <p><strong>Patient:</strong> Ananya Sharma</p>
+              <p><strong>Doctor:</strong> Dr. Radhika Iyer (Ophthalmology)</p>
+              <p><strong>Clinic:</strong> City Eye Hospital</p>
+              <p><strong>Time:</strong> Nov 24, 2026 at 04:00 PM IST</p>
+              <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid var(--color-border); display: flex; gap: 0.5rem;">
+                <button class="btn btn-sm btn-primary" onclick="alert('Appointment details added to Google / Outlook Calendar.')">Add to Calendar</button>
+                <button class="btn btn-sm btn-secondary open-checklist-btn" data-doctor="Dr. Radhika Iyer (Ophthalmology)" data-patient="Ananya Sharma">Consultation Checklist</button>
+              </div>
+            </div>
+          </div>
+
+
+        </section>
+
+        <!-- ======================================================================
+             VIEW 6: HEALTH CONNECT
+             ====================================================================== -->
+        <section id="view-health-connect" class="app-view" aria-labelledby="view-connect-title">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1 id="view-connect-title">Health Connect &amp; Device Integrations</h1>
+              <p>Connect biometric devices, smart health monitors, and digital record bridges</p>
+            </div>
+          </div>
+
+
+          <div class="disclaimer-banner">
+            <strong>Demonstration Architecture:</strong> Simulates upcoming OAuth2 and Bluetooth biometric ingestion pipelines. No live credentials or external health data transferred.
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <h3>Active Integrations Status</h3>
+              <button class="btn btn-sm btn-secondary" id="sync-all-devices-btn">Sync All Devices</button>
+            </div>
+            <div class="table-responsive">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Device / Platform</th>
+                    <th>Associated Family Member</th>
+                    <th>Last Synchronized</th>
+                    <th>Status</th>
+                    <th>Toggle</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><strong>Omron Evolv Bluetooth BP Monitor</strong></td>
+                    <td>Ramesh Sharma</td>
+                    <td class="device-sync-time">Today, 07:45 AM</td>
+                    <td><span class="status-tag stable">Connected</span></td>
+                    <td><button class="btn btn-sm btn-secondary single-sync-btn" data-device="Omron Evolv">Sync Now</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Apple HealthKit Bridge</strong></td>
+                    <td>Anil Sharma</td>
+                    <td class="device-sync-time">Today, 09:00 AM</td>
+                    <td><span class="status-tag stable">Connected</span></td>
+                    <td><button class="btn btn-sm btn-secondary single-sync-btn" data-device="Apple HealthKit">Sync Now</button></td>
+                  </tr>
+                  <tr>
+                    <td><strong>Android Health Connect API</strong></td>
+                    <td>Sunita Sharma</td>
+                    <td class="device-sync-time">Yesterday, 08:30 PM</td>
+                    <td><span class="status-tag stable">Connected</span></td>
+                    <td><button class="btn btn-sm btn-secondary single-sync-btn" data-device="Android Health Connect">Sync Now</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+
+        </section>
+
+        <!-- ======================================================================
+             VIEW 7: FAMILY SAFETY NETWORK
+             ====================================================================== -->
+        <section id="view-safety-network" class="app-view" aria-labelledby="view-safety-title">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1 id="view-safety-title">Family Safety Network &amp; Emergency Hub</h1>
+              <p>Emergency medical cards, rapid responder contacts, and hospital admission readiness</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-primary" onclick="alert('Emergency Alert Test Mode: All primary care circle members receive an instant mock SMS/push notification.')">🚨 Test Emergency Protocol</button>
+            </div>
+          </div>
+
+
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+            <div class="card">
+              <div class="card-header">
+                <h3>Primary Emergency Contacts</h3>
+              </div>
+              <ul style="list-style: none; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.85rem;">
+                <li><strong>Nearest Hospital:</strong> Apollo Emergency Care (1066 / +91 11 2692 5858)</li>
+                <li><strong>Family Physician:</strong> Dr. Vikram Mehta <span class="sensitive-data masked" data-masked-value="(+91 98111 •••••)" data-full-value="(+91 98111 22334)"><span class="val-display">(+91 98111 •••••)</span><button type="button" class="privacy-mask-btn" aria-label="Toggle physician number visibility">👁️</button></span></li>
+                <li><strong>Neighbor / Keyholder:</strong> Mr. Rajesh Verma <span class="sensitive-data masked" data-masked-value="(+91 98222 •••••)" data-full-value="(+91 98222 33445)"><span class="val-display">(+91 98222 •••••)</span><button type="button" class="privacy-mask-btn" aria-label="Toggle neighbor number visibility">👁️</button></span></li>
+                <li><strong>National Ambulance Helpline:</strong> 108 / 112</li>
+              </ul>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Hospital Admission 'Go-Bag' Checklist</h3>
+              </div>
+              <ul class="task-checklist">
+                <li class="task-item"><span class="task-title">Aadhaar &amp; Health Insurance Policy Cards (Original + Copy)</span></li>
+                <li class="task-item"><span class="task-title">Printed CareSaathi Emergency Medical Brief</span></li>
+                <li class="task-item"><span class="task-title">Current Medications with original pharmacy boxes</span></li>
+                <li class="task-item"><span class="task-title">Chargers, glasses, and emergency contact list</span></li>
+              </ul>
+            </div>
+          </div>
+
+
+        </section>
+
+        <!-- ======================================================================
+             VIEW 8: CARE CONTINUITY CENTER
+             ====================================================================== -->
+        <section id="view-care-continuity" class="app-view" aria-labelledby="view-continuity-title">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1 id="view-continuity-title">Care Continuity Center</h1>
+              <p>Caregiver shift handoffs, hospital discharge trackers, and doctor consultation briefs</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-primary" id="open-add-handoff-btn">+ Add Handoff Note</button>
+            </div>
+          </div>
+
+          <div class="card" id="handoff-feed-card">
+            <div class="card-header">
+              <h3>Caregiver Shift Handoff Feed</h3>
+              <span class="status-tag stable">Active Shift: Anil &rarr; Sunita</span>
+            </div>
+            <div id="handoff-notes-list" style="display: flex; flex-direction: column; gap: 1rem;">
+              <div class="handoff-note-item" style="border-left: 3px solid var(--color-teal-500); padding-left: 1rem;">
+                <p style="font-size: 0.875rem; color: var(--color-navy-700); line-height: 1.6; margin-bottom: 0.4rem;">
+                  <strong>Ramesh:</strong> Morning BP was normal (128/82 mmHg). Morning Amlodipine 5mg taken on schedule. Please ensure post-lunch Metformin 500mg is administered around 2:00 PM with water. His doctor appointment is tomorrow at 10:30 AM.
+                </p>
+                <div style="font-size: 0.775rem; color: var(--color-navy-500);">
+                  Logged by Anil Sharma &bull; Today at 08:30 AM &bull; Verified by Sunita
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             VIEW 9: FAMILY HUB
+             ====================================================================== -->
+        <section id="view-family-hub" class="app-view" aria-labelledby="view-hub-title">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1 id="view-hub-title">Family Health Hub</h1>
+              <p>Shared family health knowledge, insurance policies, and collaborative care notes</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-primary" id="open-post-notice-btn">+ Post Family Notice</button>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+            <div class="card">
+              <div class="card-header">
+                <h3>Family Health Insurance Policy</h3>
+              </div>
+              <p><strong>Provider:</strong> Star Health Family Optima</p>
+              <p><strong>Policy Number:</strong> <span class="sensitive-data masked" data-masked-value="SH-DEL-•••••••-A" data-full-value="SH-DEL-9842109-A"><span class="val-display">SH-DEL-•••••••-A</span><button type="button" class="privacy-mask-btn" aria-label="Toggle policy number visibility">👁️</button></span></p>
+              <p><strong>TPA Toll-free:</strong> 1800 425 2255</p>
+              <p><strong>Covered Members:</strong> Ramesh, Sunita, Anil, Ananya</p>
+              <div style="margin-top: 1rem;">
+                <button class="btn btn-sm btn-secondary" onclick="alert('Viewing digital copy of insurance card...')">View Policy Card</button>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3>Family Care Notices &amp; Guidelines</h3>
+              </div>
+              <ul id="family-notices-feed" style="list-style: none; display: flex; flex-direction: column; gap: 0.65rem; font-size: 0.85rem;">
+                <li>&bull; Keep low-sodium dietary options for Ramesh's dinners.</li>
+                <li>&bull; Keep digital prescription PDFs updated in the Health Profiles tab.</li>
+                <li>&bull; Always confirm appointment attendance 24 hours prior.</li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             VIEW 10: NOTIFICATIONS
+             ====================================================================== -->
+        <section id="view-notifications" class="app-view" aria-labelledby="view-notif-title">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1 id="view-notif-title">Family Care Notifications</h1>
+              <p>Timely medication reminders, appointment alerts, and care circle updates</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-secondary" id="mark-all-read-btn">Mark All as Read</button>
+            </div>
+          </div>
+
+
+
+          <div class="notification-feed" id="notifications-feed">
+            <div class="notification-item unread">
+              <span class="notif-icon-box" aria-hidden="true">💊</span>
+              <div class="notif-body">
+                <div class="notif-title">Medication Reminder: Metformin 500mg Due</div>
+                <div class="notif-desc">Ramesh Sharma's afternoon medication dose is due at 2:00 PM with post-lunch meal.</div>
+                <div class="notif-time">15 minutes ago • Medication Center</div>
+              </div>
+            </div>
+
+            <div class="notification-item unread">
+              <span class="notif-icon-box" aria-hidden="true">📅</span>
+              <div class="notif-body">
+                <div class="notif-title">Appointment Reminder: Cardiology Review Tomorrow</div>
+                <div class="notif-desc">Dr. Vikram Mehta consultation scheduled for Ramesh Sharma at Apollo Heart Center (10:30 AM).</div>
+                <div class="notif-time">2 hours ago • Appointments</div>
+              </div>
+            </div>
+
+            <div class="notification-item unread">
+              <span class="notif-icon-box" aria-hidden="true">🩺</span>
+              <div class="notif-body">
+                <div class="notif-title">Vitals Logged: Ramesh Sharma</div>
+                <div class="notif-desc">Morning Blood Pressure recorded as 128/82 mmHg (Normal range).</div>
+                <div class="notif-time">3 hours ago • Health Connect</div>
+              </div>
+            </div>
+
+            <div class="notification-item">
+              <span class="notif-icon-box" aria-hidden="true">🛡️</span>
+              <div class="notif-body">
+                <div class="notif-title">Safety Network Check Completed</div>
+                <div class="notif-desc">Emergency phone numbers and nearest hospital contacts verified for the month.</div>
+                <div class="notif-time">Yesterday • Safety Network</div>
+              </div>
+            </div>
+          </div>
+
+
+        </section>
+
+        <!-- ======================================================================
+             VIEW 11: ACTIVITY TIMELINE
+             ====================================================================== -->
+        <section id="view-activity-timeline" class="app-view" aria-labelledby="view-timeline-title">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1 id="view-timeline-title">Care Circle Activity Timeline</h1>
+              <p>Audit trail of all health logs, medication verifications, and family actions</p>
+            </div>
+          </div>
+
+
+
+          <div class="card">
+            <ul class="activity-widget-list" id="full-activity-timeline">
+              <li class="activity-widget-item">
+                <span class="activity-dot" aria-hidden="true">💊</span>
+                <div class="activity-widget-content">
+                  <div class="activity-title">Sunita marked Morning Levothyroxine 50mcg as taken</div>
+                  <div class="activity-time">Today, 08:15 AM • Sunita Sharma</div>
+                </div>
+              </li>
+              <li class="activity-widget-item">
+                <span class="activity-dot" aria-hidden="true">🩺</span>
+                <div class="activity-widget-content">
+                  <div class="activity-title">Anil logged Ramesh's morning blood pressure: 128/82 mmHg</div>
+                  <div class="activity-time">Today, 07:45 AM • Anil Sharma</div>
+                </div>
+              </li>
+              <li class="activity-widget-item">
+                <span class="activity-dot" aria-hidden="true">📅</span>
+                <div class="activity-widget-content">
+                  <div class="activity-title">Anil confirmed Dr. Vikram Mehta appointment for Ramesh on Nov 16</div>
+                  <div class="activity-time">Yesterday, 04:30 PM • Care Coordination</div>
+                </div>
+              </li>
+              <li class="activity-widget-item">
+                <span class="activity-dot" aria-hidden="true">✅</span>
+                <div class="activity-widget-content">
+                  <div class="activity-title">Completed task: Book Ananya's annual vision examination</div>
+                  <div class="activity-time">Nov 14, 02:15 PM • Anil Sharma</div>
+                </div>
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             VIEW 12: SETTINGS & PRIVACY
+             ====================================================================== -->
+        <section id="view-settings" class="app-view" aria-labelledby="view-settings-title">
+          <div class="view-header">
+            <div class="view-title-group">
+              <h1 id="view-settings-title">CareSaathi Settings &amp; Privacy</h1>
+              <p>Configure family notifications, data privacy boundaries, and backend API settings</p>
+            </div>
+          </div>
+
+
+
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <!-- Theme Appearance Setting -->
+            <div class="settings-group">
+              <h3>Theme &amp; Visual Appearance</h3>
+              <p>Choose between clean healthcare light mode and high-contrast dark mode</p>
+              <div class="setting-row">
+                <div class="setting-label">
+                  <strong>Application Theme</strong>
+                  <span id="settings-theme-status">Current: Light Mode (Default)</span>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button type="button" class="btn btn-sm btn-secondary" id="settings-theme-light-btn">☀️ Light Mode</button>
+                  <button type="button" class="btn btn-sm btn-secondary" id="settings-theme-dark-btn">🌙 Dark Mode</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Privacy Shield Setting -->
+            <div class="settings-group">
+              <h3>Privacy Mode &amp; Shoulder-Surfing Shield</h3>
+              <p>Mask sensitive clinical diagnoses, contact numbers, and policy IDs on screen</p>
+              <div class="setting-row">
+                <div class="setting-label">
+                  <strong>Master Privacy Shield</strong>
+                  <span>Hide sensitive numbers, blood groups, and medical diagnoses by default</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" checked id="privacy-master-switch">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="disclaimer-banner" style="margin-top: 1rem; margin-bottom: 0;">
+                <strong>Privacy Boundary Notice:</strong> This client-side masking feature protects against visual shoulder-surfing in shared or public spaces. True cryptographic patient data protection and authorization will be enforced at the database level via Supabase Row-Level Security (RLS).
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <h3>Notification Preferences</h3>
+              <p>Choose which alerts the care circle receives in real time</p>
+
+              <div class="setting-row">
+                <div class="setting-label">
+                  <strong>Medication Reminder Alerts</strong>
+                  <span>Receive push alerts 15 minutes before scheduled doses</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="setting-row">
+                <div class="setting-label">
+                  <strong>Appointment Advance Notice</strong>
+                  <span>24-hour and 2-hour appointment reminder push notifications</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div class="setting-row">
+                <div class="setting-label">
+                  <strong>Vitals Out-of-Range Escalations</strong>
+                  <span>Immediate alerts when recorded blood pressure exceeds threshold</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" checked>
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <h3>Data Privacy &amp; Encryption</h3>
+              <p>Manage health record visibility and export options</p>
+
+              <div class="setting-row">
+                <div class="setting-label">
+                  <strong>Local Demonstration Storage</strong>
+                  <span>Save recent task changes to local browser storage</span>
+                </div>
+                <label class="switch">
+                  <input type="checkbox" checked id="toggle-localstorage">
+                  <span class="slider"></span>
+                </label>
+              </div>
+
+              <div style="margin-top: 1rem; display: flex; gap: 0.75rem;">
+                <button class="btn btn-sm btn-secondary" onclick="alert('Exporting family health records to JSON...')">Export Family Data (JSON)</button>
+                <button class="btn btn-sm btn-secondary" onclick="if(confirm('Reset all demo state to defaults?')) { localStorage.clear(); location.reload(); }">Reset Demo State</button>
+              </div>
+            </div>
+
+            <div class="settings-group">
+              <h3>FastAPI Backend Configuration</h3>
+              <p>Current development service endpoints</p>
+              <div style="background-color: var(--color-surface-alt); padding: 0.85rem 1rem; border-radius: var(--radius-md); font-family: var(--font-mono); font-size: 0.8rem;">
+                <div>API Base URL: <strong>http://127.0.0.1:8000</strong></div>
+                <div>Health Check Endpoint: <strong>GET /api/health</strong></div>
+                <div>Interactive Swagger Docs: <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener noreferrer">http://127.0.0.1:8000/docs &nearr;</a></div>
+              </div>
+            </div>
+          </div>
+
+
+        </section>
+
+        <!-- ======================================================================
+             VIEW 13: AI ASSISTANT (CareSaathi Intelligence Hub)
+             ====================================================================== -->
+        <section id="view-ai-assistant" class="app-view" aria-labelledby="view-ai-title">
+          <div class="view-header">
+            <div class="view-title-group">
+              <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
+                <h1 id="view-ai-title">CareSaathi AI Care Assistant</h1>
+                <span class="status-tag stable" style="font-size: 0.75rem;">Local Demo Mode • Informational Only</span>
+              </div>
+              <p>Personalized family care summaries, medication tracking, and routine assistance</p>
+            </div>
+            <div class="view-actions">
+              <button class="btn btn-secondary" id="ai-clear-chat-btn" title="Clear current chat conversation">🗑️ Clear Chat</button>
+            </div>
+          </div>
+
+
+
+          <!-- Medical Disclaimer Safety Alert -->
+          <div class="ai-safety-notice" role="alert">
+            <div class="ai-safety-icon" aria-hidden="true">🛡️</div>
+            <div class="ai-safety-content">
+              <strong>Informational Care Coordination Only:</strong>
+              CareSaathi AI provides care coordination summaries based strictly on recorded family logs and doctor consultation notes. It is <strong>not</strong> a medical diagnostic system and cannot prescribe medication. For medical emergencies, call <strong>108 / 112</strong> immediately.
+            </div>
+          </div>
+
+
+
+          <!-- AI Chat Area -->
+          <div class="ai-chat-card">
+            <!-- Context Header Pill -->
+            <div class="ai-context-indicator">
+              <div class="ai-context-user-info">
+                <span>Active Identity:</span>
+                <strong id="ai-context-user-name">Anil Sharma</strong>
+                <span class="nav-badge" id="ai-context-role-badge">Family Owner</span>
+              </div>
+              <div class="ai-context-scope-info" id="ai-context-scope-text">
+                🔒 Authorized Scope: <span id="ai-context-member-count">4 Members</span>
+              </div>
+            </div>
+
+            <!-- Messages Window -->
+            <div class="ai-chat-messages" id="ai-chat-messages" role="log" aria-live="polite">
+              <!-- Empty state greeting -->
+              <div class="ai-empty-state" id="ai-empty-state">
+                <div class="ai-avatar-large" aria-hidden="true">✨</div>
+                <h2>Namaste! How can I assist your family today?</h2>
+                <p>Ask questions about authorized medications, doctor appointments, pending care tasks, or get a daily care overview.</p>
+
+                <div class="ai-suggestions-container">
+                  <span class="ai-suggestions-label">Try asking:</span>
+                  <div class="ai-chips-grid">
+                    <button type="button" class="ai-prompt-chip" data-query="Give me today's daily family care summary">
+                      <span>📋</span> Daily Family Care Summary
+                    </button>
+                    <button type="button" class="ai-prompt-chip" data-query="Show today's medication schedule and pending doses">
+                      <span>💊</span> Today's Medication Schedule
+                    </button>
+                    <button type="button" class="ai-prompt-chip" data-query="What upcoming appointments are scheduled?">
+                      <span>📅</span> Upcoming Doctor Visits
+                    </button>
+                    <button type="button" class="ai-prompt-chip" data-query="What care responsibilities are currently pending?">
+                      <span>📝</span> Pending Care Tasks
+                    </button>
+                    <button type="button" class="ai-prompt-chip" data-query="Explain Ramesh's latest blood pressure reading of 128/82 mmHg">
+                      <span>🩸</span> Explain Ramesh's Blood Pressure
+                    </button>
+                    <button type="button" class="ai-prompt-chip" data-query="Summarize Ramesh Sharma's profile and known allergies">
+                      <span>👤</span> Ramesh's Profile &amp; Allergies
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Message History list injected here -->
+              <div id="ai-chat-history" class="ai-chat-history"></div>
+
+              <!-- Typing Indicator -->
+              <div id="ai-typing-indicator" class="ai-typing-indicator" style="display: none;" aria-hidden="true">
+                <div class="ai-msg-avatar">✨</div>
+                <div class="ai-typing-bubble">
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                  <span class="dot"></span>
+                  <span class="typing-text">Reviewing authorized records...</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chat Input Box -->
+            <form id="ai-chat-form" class="ai-chat-input-bar">
+              <div class="ai-input-wrapper">
+                <input
+                  type="text"
+                  id="ai-chat-input"
+                  class="ai-chat-input"
+                  placeholder="Ask CareSaathi AI about authorized family care, medications, or schedules..."
+                  autocomplete="off"
+                  maxlength="1000"
+                  required
+                  aria-label="Message CareSaathi AI Assistant"
+                >
+                <button type="submit" id="ai-chat-send-btn" class="ai-chat-send-btn" aria-label="Send message">
+                  <span>Send</span>
+                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+              </div>
+              <div class="ai-input-footer-note">
+                <span>🔒 Privacy Guard: Inquiries only access records authorized for your active role. No external AI APIs or third-party trackers connected.</span>
+              </div>
+            </form>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- Modal: Schedule Appointment -->
+  <div id="schedule-apt-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="apt-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="apt-modal-title">Schedule Family Appointment</h3>
+        <button class="modal-close-btn" data-close-modal="schedule-apt-modal" aria-label="Close dialog">✕</button>
+      </div>
+      <form id="schedule-apt-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="modal-apt-member">Family Member</label>
+            <select id="modal-apt-member" required>
+              <option value="Ramesh Sharma">Ramesh Sharma (Grandfather)</option>
+              <option value="Sunita Sharma">Sunita Sharma (Mother)</option>
+              <option value="Anil Sharma">Anil Sharma (Father)</option>
+              <option value="Ananya Sharma">Ananya Sharma (Daughter)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="modal-apt-title">Reason / Specialty</label>
+            <input type="text" id="modal-apt-title" placeholder="e.g. Annual Dental Screening" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-apt-doctor">Doctor or Clinic</label>
+            <input type="text" id="modal-apt-doctor" placeholder="e.g. Dr. K. Sharma (Dental Care)" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-apt-date">Date &amp; Time</label>
+            <input type="datetime-local" id="modal-apt-date" required>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="schedule-apt-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Schedule Consultation</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Family Member -->
+  <div id="add-member-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="member-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="member-modal-title">Add Family Member to Care Circle</h3>
+        <button class="modal-close-btn" data-close-modal="add-member-modal" aria-label="Close dialog">✕</button>
+      </div>
+      <form id="add-member-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="modal-member-name">Full Name</label>
+            <input type="text" id="modal-member-name" placeholder="e.g. Priya Sharma" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-member-relation">Relationship</label>
+            <input type="text" id="modal-member-relation" placeholder="e.g. Grandmother, Sister, Son" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-member-age">Age (years)</label>
+            <input type="number" id="modal-member-age" min="1" max="120" placeholder="e.g. 70" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-member-blood">Blood Group</label>
+            <select id="modal-member-blood">
+              <option value="A+">A+</option>
+              <option value="A-">A-</option>
+              <option value="B+">B+</option>
+              <option value="B-">B-</option>
+              <option value="O+">O+</option>
+              <option value="O-">O-</option>
+              <option value="AB+">AB+</option>
+              <option value="AB-">AB-</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="modal-member-allergies">Allergies (Optional)</label>
+            <input type="text" id="modal-member-allergies" placeholder="e.g. Penicillin, Peanuts (or leave blank)">
+          </div>
+          <div class="form-group">
+            <label for="modal-member-notes">Care Notes (Optional)</label>
+            <input type="text" id="modal-member-notes" placeholder="e.g. Routine blood pressure monitoring">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="add-member-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Add Member</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Care Continuity Shift Handoff Note -->
+  <div id="add-handoff-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="handoff-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="handoff-modal-title">Log Caregiver Shift Handoff Note</h3>
+        <button class="modal-close-btn" data-close-modal="add-handoff-modal" aria-label="Close dialog">✕</button>
+      </div>
+      <form id="add-handoff-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="modal-handoff-member">Family Member</label>
+            <select id="modal-handoff-member" required>
+              <option value="Ramesh Sharma">Ramesh Sharma (Grandfather)</option>
+              <option value="Sunita Sharma">Sunita Sharma (Mother)</option>
+              <option value="Anil Sharma">Anil Sharma (Father)</option>
+              <option value="Ananya Sharma">Ananya Sharma (Daughter)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="modal-handoff-shift">Shift Handoff (From &rarr; To)</label>
+            <input type="text" id="modal-handoff-shift" placeholder="e.g. Anil Sharma &rarr; Nurse Priya Nair" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-handoff-note">Handoff Instructions &amp; Vitals Summary</label>
+            <textarea id="modal-handoff-note" rows="3" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background-color: var(--color-surface-alt); color: var(--color-navy-900);" placeholder="e.g. Ramesh took his morning medication. Blood pressure normal (128/82 mmHg). Ensure post-lunch Metformin is taken at 2 PM." required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="add-handoff-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Handoff Note</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Post Family Hub Notice -->
+  <div id="add-notice-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="notice-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="notice-modal-title">Post Family Hub Notice</h3>
+        <button class="modal-close-btn" data-close-modal="add-notice-modal" aria-label="Close dialog">✕</button>
+      </div>
+      <form id="add-notice-form">
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="modal-notice-title">Notice Title</label>
+            <input type="text" id="modal-notice-title" placeholder="e.g. Dr. Mehta Cardiology Follow-up Report" required>
+          </div>
+          <div class="form-group">
+            <label for="modal-notice-content">Details / Instructions</label>
+            <textarea id="modal-notice-content" rows="3" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background-color: var(--color-surface-alt); color: var(--color-navy-900);" placeholder="Write guidelines or updates for the family care circle..." required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="add-notice-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Post Notice</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Export Doctor Brief -->
+  <div id="doctor-brief-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="brief-modal-title">
+    <div class="modal-dialog" style="max-width: 620px;">
+      <div class="modal-header">
+        <h3 id="brief-modal-title">Clinical Consultation Summary Brief</h3>
+        <button class="modal-close-btn" data-close-modal="doctor-brief-modal" aria-label="Close dialog">✕</button>
+      </div>
+      <div class="modal-body">
+        <div style="background-color: var(--color-surface-alt); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1.25rem; font-size: 0.875rem; line-height: 1.6;">
+          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--color-border); padding-bottom: 0.5rem; margin-bottom: 0.75rem;">
+            <strong>Patient: Ramesh Sharma (74 yrs)</strong>
+            <span>Date: Today</span>
+          </div>
+          <p><strong>Primary Diagnoses:</strong> Hypertension (Controlled)</p>
+          <p><strong>Known Allergies:</strong> Penicillin (Severe)</p>
+          <p><strong>Current Active Medications:</strong></p>
+          <ul style="margin-left: 1.25rem; margin-bottom: 0.75rem;">
+            <li>Amlodipine 5mg (Morning 08:00 AM) — 94% 7-day adherence</li>
+            <li>Metformin 500mg (Post-lunch 02:00 PM)</li>
+          </ul>
+          <p><strong>Recent Vitals Trend:</strong> BP 128/82 mmHg (Stable), Fasting Blood Sugar 114 mg/dL</p>
+          <p style="font-size: 0.75rem; color: var(--color-navy-500); margin-top: 0.5rem;">
+            <em>Generated via CareSaathi Family Coordination Platform. For clinical reference only.</em>
+          </p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-close-modal="doctor-brief-modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="window.print()">🖨️ Print / Save PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Consultation Checklist -->
+  <div id="consultation-checklist-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="checklist-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <h3 id="checklist-modal-title">Doctor Consultation Preparation Checklist</h3>
+        <button class="modal-close-btn" data-close-modal="consultation-checklist-modal" aria-label="Close dialog">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="checklist-modal-body-content" style="font-size: 0.875rem; line-height: 1.6;">
+          <p><strong id="checklist-doctor-name">Dr. Vikram Mehta (Cardiology)</strong></p>
+          <ul class="task-checklist" style="margin-top: 0.75rem;">
+            <li class="task-item"><span class="task-title">Fasting overnight for 8-10 hours prior to consultation</span></li>
+            <li class="task-item"><span class="task-title">Carry daily morning and evening Blood Pressure log chart</span></li>
+            <li class="task-item"><span class="task-title">Bring previous echocardiogram and ECG records</span></li>
+            <li class="task-item"><span class="task-title">Bring current pharmacy prescription boxes</span></li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" data-close-modal="consultation-checklist-modal">Got It</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Application Logic -->
+  <script src="js/app.js" defer></script>
+</body>
+</html>
