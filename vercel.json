@@ -1,8 +1,8 @@
+
 {
   "version": 2,
   "cleanUrls": true,
   "trailingSlash": false,
-  "public": true,
   "routes": [
     {
       "src": "/api/(.*)",
@@ -10,7 +10,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/$1"
+      "dest": "/$1"
     }
   ]
 }
