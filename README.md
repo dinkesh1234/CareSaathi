@@ -234,14 +234,6 @@ In a separate terminal:
 python -m http.server --bind 127.0.0.1 --directory frontend 3000
 ```
 
-- **Frontend App:** [http://127.0.0.1:3000](http://127.0.0.1:3000)
-- **Backend API:** [http://127.0.0.1:8000](http://127.0.0.1:8000)
-- **Interactive Swagger Docs:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
-- **Backend Health Check:** [http://127.0.0.1:8000/api/health](http://127.0.0.1:8000/api/health)
-- **Live Integrations Audit:** [http://127.0.0.1:8000/api/integrations/status](http://127.0.0.1:8000/api/integrations/status)
-
----
-
 ## ☁️ Deployment Configurations
 
 The repository includes production blueprints ready for immediate hosting:
@@ -257,4 +249,3 @@ The repository includes production blueprints ready for immediate hosting:
 - **Active Branch:** `master` (single clean branch).
 - **Environment & Secrets:** `.env` and all credential tokens strictly excluded via `.gitignore`.
 - **License:** Open-source MIT.
-

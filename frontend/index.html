@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>CareSaathi — Family Health &amp; Care Coordination Platform</title>
-  <meta name="description" content="CareSaathi is an open, family-centric health and care coordination platform for managing health vitals, medication adherence, appointments, and care circle responsibilities.">
+  <meta name="description" content="CareSaathi is an open, family-centric healthcare and elderly-care coordination platform for managing appointments, medication adherence, and health records.">
   <link rel="stylesheet" href="css/style.css">
   <link rel="icon" type="image/svg+xml" href="assets/logo.svg">
 </head>
@@ -78,8 +78,8 @@
 
       <div class="login-legal-links">
         By continuing, you agree to CareSaathi's
-        <a id="link-open-terms">Terms of Service</a> and
-        <a id="link-open-privacy">Privacy Policy</a>.
+        <a id="link-open-terms" href="#terms">Terms of Service</a> and
+        <a id="link-open-privacy" href="#privacy">Privacy Policy</a>.
       </div>
     </div>
   </div>
@@ -92,7 +92,7 @@
     <div id="sidebar-overlay" class="sidebar-overlay" aria-hidden="true"></div>
 
     <!-- ==========================================================================
-         1. Left Sidebar Navigation (Strictly 6 Consumer Healthcare Items)
+         1. Left Sidebar Navigation (Consumer Healthcare Features)
          ========================================================================== -->
     <aside id="app-sidebar" class="app-sidebar" aria-label="Main Application Navigation">
       <!-- Sidebar Header -->
@@ -116,7 +116,7 @@
         </div>
       </div>
 
-      <!-- Primary Navigation Links (Clean 3-Item Navigation) -->
+      <!-- Primary Navigation Links -->
       <nav class="sidebar-nav" aria-label="Sidebar Menu">
         <ul class="nav-list" role="menubar">
           <!-- 1. Home Dashboard -->
@@ -128,7 +128,43 @@
               <span>Home Dashboard</span>
             </button>
           </li>
-          <!-- 2. AI Care Assistant -->
+          <!-- 2. Family Members -->
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="family-members" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              </span>
+              <span>Family Members</span>
+            </button>
+          </li>
+          <!-- 3. Medications -->
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="medications" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="12" x2="15" y2="12"></line><line x1="12" y1="9" x2="12" y2="15"></line></svg>
+              </span>
+              <span>Medications</span>
+            </button>
+          </li>
+          <!-- 4. Calendar & Appointments -->
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="appointments" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+              </span>
+              <span>Appointments &amp; Calendar</span>
+            </button>
+          </li>
+          <!-- 5. Care Continuity -->
+          <li class="nav-item" role="none">
+            <button class="nav-link" data-view="care-continuity" role="menuitem">
+              <span class="nav-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+              </span>
+              <span>Care Continuity</span>
+            </button>
+          </li>
+          <!-- 6. AI Care Assistant -->
           <li class="nav-item" role="none">
             <button class="nav-link" data-view="ai-assistant" role="menuitem">
               <span class="nav-icon" aria-hidden="true">
@@ -137,7 +173,7 @@
               <span>AI Care Assistant</span>
             </button>
           </li>
-          <!-- 3. Settings & Profile -->
+          <!-- 7. Settings & Profile -->
           <li class="nav-item" role="none">
             <button class="nav-link" data-view="settings" role="menuitem">
               <span class="nav-icon" aria-hidden="true">
@@ -176,7 +212,7 @@
           </button>
           <div class="search-box">
             <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" id="global-search-input" placeholder="Search medications, appointments..." aria-label="Search Dashboard">
+            <input type="text" id="global-search-input" placeholder="Search medications, appointments, members..." aria-label="Search Dashboard">
           </div>
         </div>
 
@@ -219,7 +255,7 @@
       <main id="app-content" class="app-content">
 
         <!-- ======================================================================
-             VIEW 1: PERSONAL HOME DASHBOARD (Single-User Healthcare Dashboard)
+             VIEW 1: PERSONAL HOME DASHBOARD
              ====================================================================== -->
         <section id="view-dashboard" class="app-view active" aria-labelledby="view-dashboard-title">
           <!-- Personalized Welcome Banner -->
@@ -227,337 +263,503 @@
             <div class="welcome-inner">
               <div class="welcome-text">
                 <h2 id="view-dashboard-title">Namaste, <span id="welcome-user-name">User</span>!</h2>
-                <p id="welcome-subtext">
-                  Welcome to your CareSaathi personal health dashboard. Manage your health records, scheduled medications, and doctor visits.
-                </p>
-                <div style="font-size: 0.8rem; color: var(--color-navy-500); margin-top: 0.5rem;" id="today-date-display"></div>
+                <p id="welcome-subtext">Family healthcare coordination dashboard for your household.</p>
               </div>
-              <div class="welcome-metrics">
-                <div class="metric-chip">
-                  <span class="metric-chip-val" id="chip-profile-status">--</span>
-                  <span class="metric-chip-lbl">Profile Health</span>
-                </div>
-                <div class="metric-chip">
-                  <span class="metric-chip-val" id="chip-meds-count">0</span>
-                  <span class="metric-chip-lbl">Active Meds</span>
-                </div>
-                <div class="metric-chip">
-                  <span class="metric-chip-val" id="chip-apts-count">0</span>
-                  <span class="metric-chip-lbl">Consultations</span>
-                </div>
+              <div class="welcome-badge">
+                <span class="badge badge-teal" id="today-date-display">Today</span>
               </div>
             </div>
           </div>
 
-          <!-- Quick Action Buttons Row -->
-          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
-            <button type="button" class="btn btn-primary" data-jump="ai-assistant">
-              <span>Ask AI Assistant</span>
-            </button>
-            <button type="button" class="btn btn-secondary" id="dash-quick-add-med-btn">
-              <span>+ Add Prescription</span>
-            </button>
-            <button type="button" class="btn btn-secondary" id="dash-quick-add-apt-btn">
-              <span>+ Book Consultation</span>
-            </button>
-            <button type="button" class="btn btn-secondary" id="dash-edit-profile-btn">
-              <span>Edit Health Profile</span>
-            </button>
-          </div>
-
-          <!-- Personal Health Profile Summary Card -->
-          <div class="card" style="margin-bottom: 1.5rem;" id="dash-personal-profile-card">
-            <div class="card-header">
-              <div>
-                <h3 style="margin-bottom: 0.2rem;">Personal Health Profile</h3>
-                <span style="font-size: 0.775rem; color: var(--color-navy-500);" id="dash-profile-status-text">Your primary CareSaathi health record</span>
-              </div>
-              <button type="button" class="btn btn-sm btn-secondary" id="dash-profile-edit-btn">Edit Profile</button>
+          <!-- Quick Metrics Grid -->
+          <div class="dashboard-metrics-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+            <div class="metric-card" style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 10px; padding: 1.25rem;">
+              <div style="font-size: 0.75rem; font-weight: 700; color: #64748B; text-transform: uppercase;">Family Care Circle</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: #111827; margin: 0.35rem 0;" id="metric-family-count">4 Members</div>
+              <div style="font-size: 0.75rem; color: #0F766E;">Active coordination active</div>
             </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-              <div class="metric-box">
-                <div class="metric-label">Full Name</div>
-                <div class="metric-value" id="dash-profile-name">--</div>
-              </div>
-              <div class="metric-box">
-                <div class="metric-label">Age</div>
-                <div class="metric-value" id="dash-profile-age">--</div>
-              </div>
-              <div class="metric-box">
-                <div class="metric-label">Blood Group</div>
-                <div class="metric-value" id="dash-profile-blood">Not set</div>
-              </div>
-              <div class="metric-box">
-                <div class="metric-label">Emergency Contact</div>
-                <div class="metric-value" id="dash-profile-contact">Not set</div>
-              </div>
+            <div class="metric-card" style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 10px; padding: 1.25rem;">
+              <div style="font-size: 0.75rem; font-weight: 700; color: #64748B; text-transform: uppercase;">Prescriptions Due</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: #111827; margin: 0.35rem 0;" id="metric-meds-count">4 Scheduled</div>
+              <div style="font-size: 0.75rem; color: #0F766E;">Daily adherence tracked</div>
             </div>
-            <div style="margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid var(--color-border); display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-              <div>
-                <span class="card-vital-label">Known Allergies:</span>
-                <span id="dash-profile-allergies" style="font-size: 0.85rem; color: var(--color-navy-800); margin-left: 0.35rem;">None reported</span>
-              </div>
-              <div>
-                <span class="card-vital-label">Health Notes / Conditions:</span>
-                <span id="dash-profile-notes" style="font-size: 0.85rem; color: var(--color-navy-800); margin-left: 0.35rem;">None reported</span>
-              </div>
+            <div class="metric-card" style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 10px; padding: 1.25rem;">
+              <div style="font-size: 0.75rem; font-weight: 700; color: #64748B; text-transform: uppercase;">Upcoming Visits</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: #111827; margin: 0.35rem 0;" id="metric-apts-count">2 Consultations</div>
+              <div style="font-size: 0.75rem; color: #0F766E;">Escorts coordinated</div>
+            </div>
+            <div class="metric-card" style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 10px; padding: 1.25rem;">
+              <div style="font-size: 0.75rem; font-weight: 700; color: #64748B; text-transform: uppercase;">Care Continuity</div>
+              <div style="font-size: 1.5rem; font-weight: 700; color: #111827; margin: 0.35rem 0;">100% Monitored</div>
+              <div style="font-size: 0.75rem; color: #0F766E;">No unassigned gaps</div>
             </div>
           </div>
 
-          <!-- Two-Column Section: Left (Medications & Appointments), Right (AI Quick Ask & Activity) -->
-          <div class="dashboard-grid-2col">
-            <!-- Left Column: Medications and Appointments -->
-            <div class="dashboard-column">
-              <!-- BLOCK: Today's Medication Schedule -->
+          <!-- Quick Ask CareSaathi AI Bar -->
+          <div class="ai-quick-ask-card" style="margin-bottom: 1.5rem; background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 1.25rem; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span style="font-size: 1rem; color: var(--color-teal-700);">
+                  <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                </span>
+                <strong style="font-size: 0.95rem; color: var(--color-navy-950);">Ask CareSaathi AI Care Coordinator</strong>
+              </div>
+              <span class="badge badge-teal" style="font-size: 0.7rem;">Gemini 2.5 Flash</span>
+            </div>
+            <form id="dash-ai-quick-form" style="display: flex; gap: 0.5rem; margin-bottom: 0.75rem;">
+              <input type="text" id="dash-ai-quick-input" placeholder="e.g. Summarize today's family care schedule or medication instructions..." style="flex: 1; border: 1px solid #E5E7EB; border-radius: 8px; padding: 0.65rem 0.85rem; font-size: 0.875rem;">
+              <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.25rem; font-weight: 600;">Ask AI</button>
+            </form>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+              <button type="button" class="btn btn-sm btn-outline ai-prompt-chip" data-query="Summarize today's family care schedule">Today's schedule</button>
+              <button type="button" class="btn btn-sm btn-outline ai-prompt-chip" data-query="What appointments are upcoming?">Upcoming visits</button>
+              <button type="button" class="btn btn-sm btn-outline ai-prompt-chip" data-query="Explain prescribed medication instructions">Medication instructions</button>
+            </div>
+          </div>
+
+          <!-- Main Dashboard Split Grid -->
+          <div class="dashboard-grid">
+            <!-- Left Column: Personal Health Profile & Care Activity -->
+            <div class="dashboard-left-col">
+              <!-- Personal Health Profile Card -->
+              <div class="card" id="dash-personal-profile-card">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <h3 class="card-title">Personal Health Profile</h3>
+                    <p class="card-subtitle">Primary account health vitals and emergency records</p>
+                  </div>
+                  <button type="button" class="btn btn-sm btn-secondary" id="dash-edit-profile-btn">Edit Details</button>
+                </div>
+                <div class="card-body">
+                  <div class="profile-hero-badge" style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 1rem; border-bottom: 1px solid var(--color-border); margin-bottom: 1rem;">
+                    <div>
+                      <h4 id="dash-profile-name" style="font-size: 1.1rem; font-weight: 700; color: var(--color-navy-950); margin-bottom: 2px;">Loading profile...</h4>
+                      <span id="dash-profile-age" style="font-size: 0.8rem; color: var(--color-navy-600);">Personal Record</span>
+                    </div>
+                    <span class="badge badge-teal" id="chip-profile-status">Verified Account</span>
+                  </div>
+                  <div class="health-vitals-summary" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem;">
+                    <div style="background: var(--color-card-bg); padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+                      <div style="font-size: 0.725rem; font-weight: 600; color: var(--color-navy-500); text-transform: uppercase;">Blood Group</div>
+                      <div id="dash-profile-blood" style="font-size: 1rem; font-weight: 700; color: var(--color-navy-950); margin-top: 2px;">--</div>
+                    </div>
+                    <div style="background: var(--color-card-bg); padding: 0.75rem; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+                      <div style="font-size: 0.725rem; font-weight: 600; color: var(--color-navy-500); text-transform: uppercase;">Emergency Contact</div>
+                      <div id="dash-profile-contact" style="font-size: 0.85rem; font-weight: 600; color: var(--color-navy-950); margin-top: 2px;">None listed</div>
+                    </div>
+                  </div>
+                  <div class="health-meta-list" style="font-size: 0.85rem; line-height: 1.6; color: var(--color-navy-800);">
+                    <div style="margin-bottom: 0.5rem;">
+                      <strong style="color: var(--color-navy-950);">Known Allergies:</strong>
+                      <span id="dash-profile-allergies" style="color: var(--color-navy-600);">None reported</span>
+                    </div>
+                    <div>
+                      <strong style="color: var(--color-navy-950);">Health Notes:</strong>
+                      <span id="dash-profile-notes" style="color: var(--color-navy-600);">Routine family coordination active.</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Care Activity Log -->
+              <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <h3 class="card-title">Recent Care Activity</h3>
+                    <p class="card-subtitle">Real-time log of family care events</p>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <ul id="dashboard-activity-list" style="list-style: none; padding: 0; margin: 0;">
+                    <li class="empty-state-box" style="text-align: center; padding: 1.5rem 0; color: #64748B; font-size: 0.85rem;">
+                      Activity will appear here as schedules and consultations update.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right Column: Today's Medication & Consultations Snapshot -->
+            <div class="dashboard-right-col">
+              <!-- Today's Medication Schedule -->
               <div class="card" id="dashboard-med-card">
                 <div class="card-header">
-                  <h3>Today's Medication Schedule</h3>
-                  <button type="button" class="btn btn-sm btn-primary" id="open-add-med-dash-btn">+ Add</button>
+                  <div class="card-title-group">
+                    <h3 class="card-title">Today's Medication Schedule</h3>
+                    <p class="card-subtitle">Daily prescription adherence tracking</p>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="badge badge-outline" id="chip-meds-count">Active</span>
+                    <button type="button" class="btn btn-sm btn-primary" id="dash-quick-add-med-btn">+ Add</button>
+                  </div>
                 </div>
-                <div class="med-timeline" id="dashboard-med-timeline">
-                  <!-- Dynamically populated from API or clean empty state -->
-                </div>
-                <!-- Non-consumption healthcare disclaimer -->
-                <div style="margin-top: 0.75rem; padding: 0.65rem 0.85rem; background-color: var(--color-surface-alt); border-radius: var(--radius-sm); font-size: 0.725rem; color: var(--color-navy-500); line-height: 1.4;">
-                  <em>Disclaimer: CareSaathi records user-reported adherence for coordination purposes and does not represent independent clinical verification of medication consumption.</em>
+                <div class="card-body">
+                  <div id="dashboard-med-timeline">
+                    <div style="text-align: center; padding: 2rem; color: #64748B;">Loading medication schedules...</div>
+                  </div>
                 </div>
               </div>
 
-              <!-- BLOCK: Upcoming Consultations -->
-              <div class="card" id="dashboard-apt-card">
+              <!-- Upcoming Consultations Card -->
+              <div class="card" id="dashboard-apt-card" style="margin-top: 1.5rem;">
                 <div class="card-header">
-                  <h3>Upcoming Appointments &amp; Consultations</h3>
-                  <button type="button" class="btn btn-sm btn-primary" id="open-schedule-apt-btn">+ Schedule</button>
+                  <div class="card-title-group">
+                    <h3 class="card-title">Upcoming Consultations</h3>
+                    <p class="card-subtitle">Doctor visits and scheduled appointments</p>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="badge badge-outline" id="chip-apts-count">Upcoming</span>
+                    <button type="button" class="btn btn-sm btn-primary" id="dash-quick-add-apt-btn">+ Schedule</button>
+                  </div>
                 </div>
-                <div class="appointment-list" id="dashboard-appointments-list">
-                  <!-- Dynamically populated from API or clean empty state -->
+                <div class="card-body">
+                  <div id="dashboard-appointments-list">
+                    <div style="text-align: center; padding: 2rem; color: #64748B;">Loading scheduled appointments...</div>
+                  </div>
                 </div>
-              </div>
-            </div>
-
-            <!-- Right Column: AI Assistant Quick Entry & Activity Feed -->
-            <div class="dashboard-column">
-              <!-- BLOCK: CareSaathi AI Assistant Helper -->
-              <div class="card">
-                <div class="card-header">
-                  <h3>CareSaathi AI Care Assistant</h3>
-                  <button type="button" class="btn btn-sm btn-secondary" data-jump="ai-assistant">Full Chat &rarr;</button>
-                </div>
-                <p style="font-size: 0.85rem; color: var(--color-navy-600); margin-bottom: 0.85rem;">
-                  Ask about authorized medications, appointments, or get a daily care overview:
-                </p>
-                <div class="ai-chips-grid" style="justify-content: flex-start; margin-bottom: 1rem;">
-                  <button type="button" class="ai-prompt-chip" data-query="Give me a summary of my scheduled medications">
-                    Summary of My Meds
-                  </button>
-                  <button type="button" class="ai-prompt-chip" data-query="What upcoming appointments do I have?">
-                    Upcoming Appointments
-                  </button>
-                  <button type="button" class="ai-prompt-chip" data-query="How should I prepare for my upcoming doctor visit?">
-                    Doctor Visit Preparation
-                  </button>
-                </div>
-                <form id="dash-ai-quick-form" style="display: flex; gap: 0.5rem;">
-                  <input type="text" id="dash-ai-quick-input" placeholder="Ask CareSaathi AI a health question..." style="flex: 1;" required>
-                  <button type="submit" class="btn btn-primary" style="flex-shrink: 0;">Ask</button>
-                </form>
-              </div>
-
-              <!-- BLOCK: Recent Health Activity -->
-              <div class="card">
-                <div class="card-header">
-                  <h3>Recent Health Activity</h3>
-                  <span class="badge" style="font-size: 0.725rem;">Activity Log</span>
-                </div>
-                <ul class="activity-widget-list" id="dashboard-activity-list">
-                  <!-- Dynamically populated from actual actions or clean empty state -->
-                </ul>
-              </div>
-            </div>
-          </div>
-        </section>
-
-                <!-- ======================================================================
-             VIEW: SETTINGS & PERSONAL PROFILE (Streamlined Essential Settings)
-             ====================================================================== -->
-        <section id="view-settings" class="app-view" aria-labelledby="view-settings-title">
-          <div class="view-header">
-            <div class="view-title-group">
-              <h1 id="view-settings-title">Settings &amp; Personal Profile</h1>
-              <p>Manage your account credentials, health parameters, and security</p>
-            </div>
-          </div>
-
-          <div style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 800px;">
-            <!-- 1. Personal Information -->
-            <div class="card">
-              <div class="card-header">
-                <h3>1. Personal Information</h3>
-              </div>
-              <div style="display: flex; align-items: center; gap: 1rem; margin-top: 0.5rem;">
-                <div class="user-avatar" id="settings-user-avatar" style="width: 48px; height: 48px; font-size: 1.1rem; background-color: var(--color-teal-700); color: white; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 700;">AS</div>
-                <div>
-                  <div style="font-size: 1.05rem; font-weight: 700; color: var(--color-navy-950);" id="settings-user-name">User</div>
-                  <div style="font-size: 0.85rem; color: var(--color-navy-600);" id="settings-user-email">user@example.com</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- 2. Health Profile Details -->
-            <div class="card">
-              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
-                <div>
-                  <h3 style="margin-bottom: 0.2rem;">2. Health Profile Details</h3>
-                  <span style="font-size: 0.775rem; color: var(--color-navy-500);">Your clinical parameters recorded for care coordination</span>
-                </div>
-                <button type="button" class="btn btn-sm btn-primary" id="settings-edit-health-btn">Edit Health Details</button>
-              </div>
-              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 0.75rem;">
-                <div class="metric-box">
-                  <div class="metric-label">Age</div>
-                  <div class="metric-value" id="settings-health-age">Not set</div>
-                </div>
-                <div class="metric-box">
-                  <div class="metric-label">Blood Group</div>
-                  <div class="metric-value" id="settings-health-blood">Not set</div>
-                </div>
-                <div class="metric-box">
-                  <div class="metric-label">Emergency Contact</div>
-                  <div class="metric-value" id="settings-health-emergency">Not set</div>
-                </div>
-                <div class="metric-box">
-                  <div class="metric-label">Known Allergies</div>
-                  <div class="metric-value" id="settings-health-allergies" style="font-size: 0.9rem;">None reported</div>
-                </div>
-              </div>
-            </div>
-
-            <!-- 3. Account Actions (Working Logout) -->
-            <div class="card">
-              <div class="card-header">
-                <h3>3. Account &amp; Session</h3>
-              </div>
-              <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 0.5rem;">
-                <div>
-                  <div style="font-size: 0.9rem; font-weight: 600; color: var(--color-navy-900);">Active Session</div>
-                  <div style="font-size: 0.8rem; color: var(--color-navy-600);">Secure CareSaathi token session active</div>
-                </div>
-                <button type="button" class="btn btn-secondary" id="settings-logout-btn" style="color: var(--color-error); border-color: var(--color-error); font-weight: 600;">
-                  Log Out of CareSaathi
-                </button>
               </div>
             </div>
           </div>
         </section>
 
         <!-- ======================================================================
-             VIEW: AI ASSISTANT (CareSaathi Intelligence Hub)
-             ====================================================================== (CareSaathi Intelligence Hub)
+             VIEW 2: FAMILY MEMBERS SCREEN
              ====================================================================== -->
-        <section id="view-ai-assistant" class="app-view" aria-labelledby="view-ai-title">
-          <div class="view-header">
-            <div class="view-title-group">
-              <div style="display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap;">
-                <h1 id="view-ai-title">CareSaathi AI Care Assistant</h1>
-                <span class="status-tag stable" style="font-size: 0.75rem;">Health Information Assistant</span>
-              </div>
-              <p>Personalized health summaries, medication tracking, and routine care assistance</p>
+        <section id="view-family-members" class="app-view" aria-labelledby="view-family-title">
+          <div class="section-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h2 id="view-family-title" style="font-size: 1.5rem; font-weight: 700; color: #111827;">Family Care Circle</h2>
+              <p style="color: #64748B; font-size: 0.875rem;">Manage household health profiles, age groups, and emergency contacts</p>
             </div>
-            <div class="view-actions" style="display: flex; gap: 0.5rem;">
-              <button class="btn btn-secondary" id="ai-new-chat-btn" title="Start a fresh conversation">New Chat</button>
-              <button class="btn btn-secondary" id="ai-clear-chat-btn" title="Clear current chat conversation">Clear Chat</button>
+            <button type="button" class="btn btn-primary" id="btn-open-add-member-modal">+ Add Family Member</button>
+          </div>
+
+          <div id="family-members-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+            <!-- Loaded dynamically from /api/family/profiles -->
+            <div style="text-align: center; padding: 2rem; color: #64748B;">Loading family members...</div>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             VIEW 3: MEDICATION MANAGEMENT SCREEN
+             ====================================================================== -->
+        <section id="view-medications" class="app-view" aria-labelledby="view-meds-title">
+          <div class="section-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h2 id="view-meds-title" style="font-size: 1.5rem; font-weight: 700; color: #111827;">Medication Management</h2>
+              <p style="color: #64748B; font-size: 0.875rem;">Prescriptions, dosages, schedules, and user-reported adherence</p>
+            </div>
+            <button type="button" class="btn btn-primary" id="btn-open-add-med-modal">+ Add Prescription</button>
+          </div>
+
+          <!-- Medication Metrics Summary -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 1.5rem;">
+            <div style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 10px; padding: 1rem;">
+              <span style="font-size: 0.75rem; font-weight: 600; color: #64748B;">TOTAL SCHEDULED</span>
+              <h3 style="font-size: 1.5rem; font-weight: 700; color: #111827; margin: 0.25rem 0;" id="med-stat-total">4 Meds</h3>
+              <span style="font-size: 0.75rem; color: #0F766E;">Across family members</span>
+            </div>
+            <div style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 10px; padding: 1rem;">
+              <span style="font-size: 0.75rem; font-weight: 600; color: #64748B;">REPORTED TAKEN TODAY</span>
+              <h3 style="font-size: 1.5rem; font-weight: 700; color: #111827; margin: 0.25rem 0;" id="med-stat-taken">1 of 4</h3>
+              <span style="font-size: 0.75rem; color: #0F766E;">Confirmed by caregiver</span>
+            </div>
+            <div style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 10px; padding: 1rem;">
+              <span style="font-size: 0.75rem; font-weight: 600; color: #64748B;">LOW REFILL ALERTS</span>
+              <h3 style="font-size: 1.5rem; font-weight: 700; color: #B45309; margin: 0.25rem 0;" id="med-stat-refill">1 Refill Alert</h3>
+              <span style="font-size: 0.75rem; color: #B45309;">Metformin (4 days left)</span>
             </div>
           </div>
 
-          <!-- Medical Disclaimer Safety Alert -->
-          <div class="ai-safety-notice" role="alert">
-            <div class="ai-safety-content">
-              <strong>General Health Information &amp; Care Organization:</strong>
-              CareSaathi AI provides general health information and helps you organize health records, schedules, and questions for your doctor. It does not provide medical diagnosis, prescribe treatments, or recommend dosages. Always consult qualified healthcare professionals for clinical decisions. In an emergency, call <strong>108 or 112</strong> immediately.
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Family Prescriptions &amp; Schedules</h3>
+            </div>
+            <div class="card-body">
+              <div id="medications-full-list">
+                <!-- Dynamically populated -->
+              </div>
             </div>
           </div>
+        </section>
 
-          <!-- AI Chat Area -->
-          <div class="ai-chat-card">
-            <!-- Context Header Pill -->
-            <div class="ai-context-indicator">
-              <div class="ai-context-user-info">
-                <span>Active User:</span>
-                <strong id="ai-context-user-name">User</strong>
-                <span class="nav-badge" id="ai-context-role-badge">Account Holder</span>
+        <!-- ======================================================================
+             VIEW 4: APPOINTMENTS & MONTHLY CALENDAR SCREEN (URGENT CALENDAR)
+             ====================================================================== -->
+        <section id="view-appointments" class="app-view" aria-labelledby="view-calendar-title">
+          <div class="section-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h2 id="view-calendar-title" style="font-size: 1.5rem; font-weight: 700; color: #111827;">Appointments &amp; Calendar</h2>
+              <p style="color: #64748B; font-size: 0.875rem;">Interactive monthly schedule, consultations, and family escort coordination</p>
+            </div>
+            <button type="button" class="btn btn-primary" id="btn-open-schedule-apt-modal">+ Schedule Consultation</button>
+          </div>
+
+          <div class="calendar-layout" style="display: grid; grid-template-columns: 1fr 380px; gap: 1.5rem; align-items: start;">
+            <!-- Left: Interactive Monthly Calendar Component -->
+            <div class="card calendar-card" style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 1.25rem;">
+              <!-- Calendar Navigation Header -->
+              <div class="calendar-nav-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <h3 id="calendar-month-year" style="font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0;">November 2026</h3>
+                  <button type="button" class="btn btn-sm btn-outline" id="cal-today-btn" style="padding: 2px 10px; font-size: 0.75rem;">Today</button>
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.35rem;">
+                  <button type="button" class="btn btn-sm btn-secondary" id="cal-prev-month-btn" aria-label="Previous Month" style="padding: 4px 10px;">&larr;</button>
+                  <button type="button" class="btn btn-sm btn-secondary" id="cal-next-month-btn" aria-label="Next Month" style="padding: 4px 10px;">&rarr;</button>
+                </div>
               </div>
-              <div class="ai-context-scope-info" id="ai-context-scope-text">
-                Authorized Scope: Personal Health Records
+
+              <!-- Weekdays Header Row -->
+              <div class="calendar-weekdays" style="display: grid; grid-template-columns: repeat(7, 1fr); text-align: center; font-size: 0.75rem; font-weight: 700; color: #64748B; margin-bottom: 0.5rem; text-transform: uppercase;">
+                <div>Sun</div>
+                <div>Mon</div>
+                <div>Tue</div>
+                <div>Wed</div>
+                <div>Thu</div>
+                <div>Fri</div>
+                <div>Sat</div>
+              </div>
+
+              <!-- Days Grid (35 or 42 interactive day cells) -->
+              <div id="calendar-days-grid" class="calendar-days-grid" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;">
+                <!-- Populated dynamically by renderMonthlyCalendar() -->
               </div>
             </div>
 
-            <!-- Messages Window -->
-            <div class="ai-chat-messages" id="ai-chat-messages" role="log" aria-live="polite">
-              <!-- Empty state greeting -->
-              <div class="ai-empty-state" id="ai-empty-state">
-                <div class="ai-avatar-large" aria-hidden="true" style="background: var(--color-teal-700); font-size: 1.25rem;">AI</div>
-                <h2>Namaste! How can I help with your health today?</h2>
-                <p>Ask questions about your health records, scheduled medications, upcoming consultations, or preparation for doctor visits.</p>
+            <!-- Right: Selected Date's Scheduled Consultations -->
+            <div class="card selected-date-appointments-card" style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 12px; padding: 1.25rem;">
+              <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 0.75rem; border-bottom: 1px solid #E5E7EB; margin-bottom: 1rem;">
+                <div>
+                  <h3 style="font-size: 1rem; font-weight: 700; color: #111827; margin: 0;" id="selected-date-title">Consultations for Selected Date</h3>
+                  <span style="font-size: 0.75rem; color: #64748B;" id="selected-date-subtitle">Showing all day appointments</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-primary" id="cal-quick-add-btn">+ Book</button>
+              </div>
 
-                <div class="ai-suggestions-container">
-                  <span class="ai-suggestions-label">Suggested Inquiries:</span>
-                  <div class="ai-chips-grid">
-                    <button type="button" class="ai-prompt-chip" data-query="Give me a summary of my scheduled medications">
-                      Summary of Scheduled Medications
-                    </button>
-                    <button type="button" class="ai-prompt-chip" data-query="What upcoming appointments do I have?">
-                      Upcoming Consultations
-                    </button>
-                    <button type="button" class="ai-prompt-chip" data-query="How should I prepare for my upcoming doctor visit?">
-                      Doctor Visit Preparation Checklist
-                    </button>
-                    <button type="button" class="ai-prompt-chip" data-query="Explain normal blood pressure ranges for adults">
-                      Explain Blood Pressure Ranges
-                    </button>
-                    <button type="button" class="ai-prompt-chip" data-query="What are best practices for daily medication adherence?">
-                      Medication Adherence Tips
-                    </button>
+              <div id="selected-date-apts-container">
+                <!-- Populated dynamically based on date clicked -->
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             VIEW 5: CARE CONTINUITY SUMMARY SCREEN
+             ====================================================================== -->
+        <section id="view-care-continuity" class="app-view" aria-labelledby="view-continuity-title">
+          <div class="section-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+            <div>
+              <h2 id="view-continuity-title" style="font-size: 1.5rem; font-weight: 700; color: #111827;">Care Continuity Engine</h2>
+              <p style="color: #64748B; font-size: 0.875rem;">Proactive care gap detection, shift handoffs, and care coordination oversight</p>
+            </div>
+            <span class="badge badge-teal" style="font-size: 0.8rem; padding: 0.4rem 0.75rem;">Active Safety Net</span>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 1.5rem;">
+            <!-- Detected Care Gaps Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Detected Care Gaps &amp; Priority Alerts</h3>
+              </div>
+              <div class="card-body">
+                <div id="continuity-gaps-list">
+                  <div class="gap-alert-item" style="border-left: 4px solid #F59E0B; background: #FFFBEB; padding: 0.85rem; border-radius: 8px; margin-bottom: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <strong style="font-size: 0.875rem; color: #92400E;">Low Refill Warning: Metformin 500mg</strong>
+                      <span class="badge" style="background: #FDE68A; color: #78350F; font-size: 0.7rem;">High Priority</span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #78350F; margin: 0.35rem 0 0 0;">Only 4 days of supply remaining for Ramesh Sharma. Refill coordination recommended.</p>
+                  </div>
+                  <div class="gap-alert-item" style="border-left: 4px solid #0F766E; background: #F0FDFA; padding: 0.85rem; border-radius: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <strong style="font-size: 0.875rem; color: #0F766E;">Escort Confirmed: Cardiology Review</strong>
+                      <span class="badge badge-teal" style="font-size: 0.7rem;">Resolved</span>
+                    </div>
+                    <p style="font-size: 0.8rem; color: #0F766E; margin: 0.35rem 0 0 0;">Anil Sharma confirmed accompaniment for Ramesh's Apollo clinic consultation.</p>
                   </div>
                 </div>
               </div>
+            </div>
 
-              <!-- Message History list injected here -->
-              <div id="ai-chat-history" class="ai-chat-history"></div>
+            <!-- Caregiver Shift Handoffs Card -->
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Caregiver Shift Handoff Notes</h3>
+              </div>
+              <div class="card-body">
+                <div id="continuity-handoffs-list">
+                  <div class="handoff-card" style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 8px; padding: 0.85rem; margin-bottom: 0.75rem;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.8rem; color: #64748B; margin-bottom: 0.25rem;">
+                      <span>From: <strong>Nurse Priya Nair</strong></span>
+                      <span>To: <strong>Family Circle</strong></span>
+                    </div>
+                    <div style="font-size: 0.875rem; font-weight: 600; color: #111827; margin-bottom: 0.35rem;">Morning Shift Handoff • Ramesh Sharma</div>
+                    <p style="font-size: 0.8rem; color: #4B5563; margin: 0;">Morning blood pressure recorded at 128/82 mmHg. Amlodipine administered after breakfast. Ramesh is in good spirits.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
 
-              <!-- Typing Indicator -->
-              <div id="ai-typing-indicator" class="ai-typing-indicator" style="display: none;" aria-hidden="true">
-                <div class="ai-msg-avatar" style="background: var(--color-teal-700); color: white;">AI</div>
-                <div class="ai-typing-bubble">
-                  <span class="dot"></span>
-                  <span class="dot"></span>
-                  <span class="dot"></span>
-                  <span class="typing-text">CareSaathi AI is responding...</span>
+        <!-- ======================================================================
+             VIEW 6: CARESAATHI AI ASSISTANT SCREEN
+             ====================================================================== -->
+        <section id="view-ai-assistant" class="app-view" aria-labelledby="view-ai-title">
+          <div class="ai-assistant-container">
+            <!-- Header with Active Context Scope -->
+            <div class="ai-assistant-header" style="background: #FFFFFF; border-bottom: 1px solid #E5E7EB; padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <div style="width: 40px; height: 40px; border-radius: 8px; background: #F0FDFA; color: #0F766E; display: flex; align-items: center; justify-content: center; font-weight: 700;">
+                  <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                </div>
+                <div>
+                  <h2 id="view-ai-title" style="font-size: 1.25rem; font-weight: 700; color: #111827; margin: 0;">CareSaathi AI Care Coordinator</h2>
+                  <p style="font-size: 0.75rem; color: #64748B; margin: 0;">Authorized contextual assistance via Google Gemini 2.5 Flash</p>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <button type="button" class="btn btn-sm btn-outline" id="ai-new-chat-btn">New Consultation</button>
+                <button type="button" class="btn btn-sm btn-secondary" id="ai-clear-chat-btn">Clear Chat</button>
+              </div>
+            </div>
+
+            <!-- Mandatory Clinical Safety Disclaimer -->
+            <div class="ai-clinical-safety-banner" style="background: #FFFBEB; border-bottom: 1px solid #FDE68A; padding: 0.75rem 1.25rem; font-size: 0.75rem; color: #92400E; display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-weight: 700;">Safety Notice:</span>
+              <span>CareSaathi AI provides health coordination and schedule assistance only. It does not provide medical diagnoses, treatment plans, or dosage prescriptions. In emergencies, call 108 / 112.</span>
+            </div>
+
+            <!-- Conversation Stream -->
+            <div id="ai-chat-messages" class="ai-chat-messages" style="flex: 1; overflow-y: auto; padding: 1.25rem; background: #FFFFFF; min-height: 420px; max-height: 580px; display: flex; flex-direction: column;">
+              <!-- Empty State / Suggestion Chips -->
+              <div id="ai-empty-state" class="ai-empty-state" style="text-align: center; margin: auto; max-width: 540px; padding: 2rem 1rem;">
+                <div style="width: 52px; height: 52px; border-radius: 50%; background: #F0FDFA; color: #0F766E; display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem auto;">
+                  <svg viewBox="0 0 24 24" width="28" height="28" stroke="currentColor" stroke-width="2" fill="none"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"></path></svg>
+                </div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: #111827; margin-bottom: 0.5rem;">How can I assist your family today?</h3>
+                <p style="font-size: 0.85rem; color: #64748B; margin-bottom: 1.5rem; line-height: 1.5;">I have access to your family's scheduled medications, consultations, and health notes. Ask me anything about routine schedules or care tasks.</p>
+                <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                  <button type="button" class="btn btn-outline ai-prompt-chip" data-query="Summarize today's family care schedule" style="text-align: left; padding: 0.75rem 1rem; border-color: #E5E7EB; border-radius: 8px;">
+                    <div style="font-weight: 600; font-size: 0.85rem; color: #111827;">"Summarize today's family care schedule"</div>
+                    <div style="font-size: 0.75rem; color: #64748B;">Overview of today's pending doses and appointments</div>
+                  </button>
+                  <button type="button" class="btn btn-outline ai-prompt-chip" data-query="What doctor consultations are upcoming for my family?" style="text-align: left; padding: 0.75rem 1rem; border-color: #E5E7EB; border-radius: 8px;">
+                    <div style="font-weight: 600; font-size: 0.85rem; color: #111827;">"What doctor consultations are upcoming for my family?"</div>
+                    <div style="font-size: 0.75rem; color: #64748B;">Upcoming clinic visits, dates, and escort accompaniment status</div>
+                  </button>
+                  <button type="button" class="btn btn-outline ai-prompt-chip" data-query="Are there any medication refill alerts or pending tasks?" style="text-align: left; padding: 0.75rem 1rem; border-color: #E5E7EB; border-radius: 8px;">
+                    <div style="font-weight: 600; font-size: 0.85rem; color: #111827;">"Are there any medication refill alerts or pending tasks?"</div>
+                    <div style="font-size: 0.75rem; color: #64748B;">Low supplies and care continuity check</div>
+                  </button>
                 </div>
               </div>
             </div>
 
-            <!-- Chat Input Box -->
-            <form id="ai-chat-form" class="ai-chat-input-bar">
-              <div class="ai-input-wrapper">
-                <input
-                  type="text"
-                  id="ai-chat-input"
-                  class="ai-chat-input"
-                  placeholder="Ask CareSaathi AI about your health profile, medications, or schedules..."
-                  autocomplete="off"
-                  maxlength="1000"
-                  required
-                  aria-label="Message CareSaathi AI Assistant"
-                >
-                <button type="submit" id="ai-chat-send-btn" class="ai-chat-send-btn" aria-label="Send message">
-                  <span>Send</span>
-                  <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                </button>
+            <!-- Typing Indicator -->
+            <div id="ai-typing-indicator" style="display: none; align-items: center; gap: 0.5rem; padding: 0.5rem 1.25rem; font-size: 0.8rem; color: #0F766E; background: #FFFFFF; border-top: 1px solid #F1F5F9;">
+              <span class="spinner" style="width: 14px; height: 14px; border: 2px solid #CCFBF1; border-top-color: #0F766E; border-radius: 50%; display: inline-block; animation: spin 1s linear infinite;"></span>
+              <em>CareSaathi AI is analyzing family records...</em>
+            </div>
+
+            <!-- Input Bar -->
+            <div class="ai-chat-input-bar" style="background: #FFFFFF; border-top: 1px solid #E5E7EB; padding: 1rem 1.25rem;">
+              <form id="ai-chat-form" style="display: flex; gap: 0.75rem;">
+                <input type="text" id="ai-chat-input" placeholder="Type your care coordination question..." autocomplete="off" required style="flex: 1; border: 1px solid #E5E7EB; border-radius: 8px; padding: 0.75rem 1rem; font-size: 0.875rem;">
+                <button type="submit" id="ai-chat-send-btn" class="btn btn-primary" style="padding: 0.75rem 1.5rem; font-weight: 600;">Send</button>
+              </form>
+            </div>
+          </div>
+        </section>
+
+        <!-- ======================================================================
+             VIEW 7: SETTINGS & PROFILE SCREEN
+             ====================================================================== -->
+        <section id="view-settings" class="app-view" aria-labelledby="view-settings-title">
+          <div class="settings-container" style="max-width: 800px; margin: 0 auto;">
+            <div class="section-header" style="margin-bottom: 1.5rem;">
+              <h2 id="view-settings-title" style="font-size: 1.5rem; font-weight: 700; color: #111827;">Settings &amp; Profile</h2>
+              <p style="color: #64748B; font-size: 0.875rem;">Account credentials, personal health profile, and active session management</p>
+            </div>
+
+            <!-- 1. Personal Information Card -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+              <div class="card-header">
+                <h3 class="card-title">1. Personal Information</h3>
               </div>
-              <div class="ai-input-footer-note">
-                <span>CareSaathi AI coordinates your health records securely with strict privacy protection.</span>
+              <div class="card-body">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.25rem;">
+                  <div class="user-avatar" id="settings-user-avatar" style="width: 56px; height: 56px; font-size: 1.25rem;">AS</div>
+                  <div>
+                    <h4 id="settings-user-name" style="font-size: 1.15rem; font-weight: 700; color: #111827; margin: 0;">Anil Sharma</h4>
+                    <span id="settings-user-email" style="font-size: 0.85rem; color: #64748B;">anil.sharma@example.com</span>
+                  </div>
+                </div>
               </div>
-            </form>
+            </div>
+
+            <!-- 2. Health Profile Details Card -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3 class="card-title">2. Health Profile Details</h3>
+                <button type="button" class="btn btn-sm btn-secondary" id="settings-edit-health-btn">Edit Health Details</button>
+              </div>
+              <div class="card-body">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem;">
+                  <div style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 8px; padding: 0.85rem;">
+                    <div style="font-size: 0.75rem; color: #64748B; font-weight: 600;">BLOOD GROUP</div>
+                    <div id="settings-health-blood" style="font-size: 1.1rem; font-weight: 700; color: #111827; margin-top: 2px;">B+</div>
+                  </div>
+                  <div style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 8px; padding: 0.85rem;">
+                    <div style="font-size: 0.75rem; color: #64748B; font-weight: 600;">RECORD AGE</div>
+                    <div id="settings-health-age" style="font-size: 1.1rem; font-weight: 700; color: #111827; margin-top: 2px;">74 yrs</div>
+                  </div>
+                  <div style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 8px; padding: 0.85rem;">
+                    <div style="font-size: 0.75rem; color: #64748B; font-weight: 600;">EMERGENCY CONTACT</div>
+                    <div id="settings-health-emergency" style="font-size: 0.85rem; font-weight: 600; color: #111827; margin-top: 2px;">Anil Sharma (+91 98765 43210)</div>
+                  </div>
+                  <div style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 8px; padding: 0.85rem;">
+                    <div style="font-size: 0.75rem; color: #64748B; font-weight: 600;">KNOWN ALLERGIES</div>
+                    <div id="settings-health-allergies" style="font-size: 0.85rem; font-weight: 600; color: #111827; margin-top: 2px;">Penicillin (Severe)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 3. Account Session & Security Card -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+              <div class="card-header">
+                <h3 class="card-title">3. Account &amp; Session Security</h3>
+              </div>
+              <div class="card-body">
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 0; border-bottom: 1px solid #E5E7EB;">
+                  <div>
+                    <strong style="font-size: 0.875rem; color: #111827;">Authentication Token</strong>
+                    <div style="font-size: 0.75rem; color: #64748B;">Active Bearer Session • scrypt cryptographic verification</div>
+                  </div>
+                  <span class="badge badge-teal">Secure &amp; Active</span>
+                </div>
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.85rem 0;">
+                  <div>
+                    <strong style="font-size: 0.875rem; color: #111827;">Session Lifetime</strong>
+                    <div style="font-size: 0.75rem; color: #64748B;">24 hours before token renewal required</div>
+                  </div>
+                  <span style="font-size: 0.8rem; color: #64748B;">Automated expiry purge</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. Logout Action Card -->
+            <div class="card" style="border-color: #FECACA; background: #FFF5F5;">
+              <div class="card-body" style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem;">
+                <div>
+                  <h4 style="font-size: 1rem; font-weight: 700; color: #B91C1C; margin: 0 0 2px 0;">Sign Out of CareSaathi</h4>
+                  <p style="font-size: 0.8rem; color: #7F1D1D; margin: 0;">Revoke active session token and return to authentication gateway.</p>
+                </div>
+                <button type="button" class="btn btn-danger" id="settings-logout-btn" style="background: #EF4444; color: white;">Log Out</button>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -565,8 +767,11 @@
     </div>
   </div>
 
-  <!-- Modal: Schedule Appointment -->
-    <!-- Modal: Personal Health Profile Onboarding / Edit -->
+  <!-- ==========================================================================
+       MODALS & DIALOGS
+       ========================================================================== -->
+
+  <!-- Modal: Personal Health Profile Onboarding / Edit -->
   <div id="onboarding-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="onboarding-modal-title">
     <div class="modal-dialog" style="max-width: 520px;">
       <div class="modal-header">
@@ -575,44 +780,41 @@
       </div>
       <form id="onboard-profile-form">
         <div class="modal-body">
-          <p style="font-size: 0.85rem; color: var(--color-navy-600); margin-bottom: 1.25rem;">
-            Keep your personal health details updated for care coordination, adherence records, and AI summaries.
-          </p>
-          <div class="form-group">
-            <label for="onboard-fullname">Full Name *</label>
-            <input type="text" id="onboard-fullname" placeholder="e.g. Anil Sharma" required>
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label for="onboard-fullname">Full Name</label>
+            <input type="text" id="onboard-fullname" placeholder="e.g. Ramesh Sharma" required>
           </div>
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.85rem;">
             <div class="form-group">
               <label for="onboard-age">Age (years)</label>
-              <input type="number" id="onboard-age" min="1" max="120" placeholder="e.g. 50">
+              <input type="number" id="onboard-age" placeholder="e.g. 74" min="1" max="120" required>
             </div>
             <div class="form-group">
               <label for="onboard-blood">Blood Group</label>
-              <select id="onboard-blood">
-                <option value="">Select Blood Group</option>
+              <select id="onboard-blood" required>
+                <option value="">Select Group</option>
                 <option value="A+">A+</option>
                 <option value="A-">A-</option>
                 <option value="B+">B+</option>
                 <option value="B-">B-</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
                 <option value="AB+">AB+</option>
                 <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
               </select>
             </div>
           </div>
-          <div class="form-group">
-            <label for="onboard-emergency">Emergency Contact Phone</label>
-            <input type="tel" id="onboard-emergency" placeholder="e.g. +91 98765 43210">
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label for="onboard-emergency">Emergency Contact (Phone &amp; Name)</label>
+            <input type="text" id="onboard-emergency" placeholder="e.g. Anil Sharma (+91 98765 43210)">
+          </div>
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label for="onboard-allergies">Known Allergies (if any)</label>
+            <input type="text" id="onboard-allergies" placeholder="e.g. Penicillin, Sulfa drugs, Peanuts">
           </div>
           <div class="form-group">
-            <label for="onboard-allergies">Known Allergies (Optional)</label>
-            <input type="text" id="onboard-allergies" placeholder="e.g. Penicillin, Pollen, or None">
-          </div>
-          <div class="form-group">
-            <label for="onboard-conditions">Health Notes / Medical Conditions (Optional)</label>
-            <textarea id="onboard-conditions" rows="2" style="width: 100%; padding: 0.65rem 0.85rem; border-radius: var(--radius-md); border: 1px solid var(--color-border); background-color: var(--color-surface-alt); color: var(--color-navy-900);" placeholder="e.g. Routine blood pressure monitoring"></textarea>
+            <label for="onboard-conditions">Medical Notes / Conditions</label>
+            <textarea id="onboard-conditions" rows="3" placeholder="e.g. Controlled hypertension, routine blood pressure monitoring."></textarea>
           </div>
         </div>
         <div class="modal-footer" style="display: flex; justify-content: space-between;">
@@ -623,34 +825,45 @@
     </div>
   </div>
 
+  <!-- Modal: Schedule Appointment (Calendar Integration) -->
   <div id="schedule-apt-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="apt-modal-title">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 id="apt-modal-title">Schedule Family Appointment</h3>
+        <h3 id="apt-modal-title">Schedule Consultation</h3>
         <button class="modal-close-btn" data-close-modal="schedule-apt-modal" aria-label="Close dialog">✕</button>
       </div>
       <form id="schedule-apt-form">
         <div class="modal-body">
-          <div class="form-group">
-            <label for="modal-apt-member">Family Member</label>
-            <select id="modal-apt-member" required><option value="self">Primary Account Holder</option></select>
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label for="modal-apt-member">Patient / Family Member</label>
+            <select id="modal-apt-member" required>
+              <option value="self">Primary Account Holder</option>
+            </select>
           </div>
-          <div class="form-group">
-            <label for="modal-apt-title">Reason / Specialty</label>
-            <input type="text" id="modal-apt-title" placeholder="e.g. Annual Dental Screening" required>
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label for="modal-apt-title">Appointment Title / Specialty</label>
+            <input type="text" id="modal-apt-title" placeholder="e.g. Cardiology Review, Annual Eye Screening" required>
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-bottom: 0.85rem;">
             <label for="modal-apt-doctor">Doctor or Clinic</label>
-            <input type="text" id="modal-apt-doctor" placeholder="e.g. Dr. K. Sharma (Dental Care)" required>
+            <input type="text" id="modal-apt-doctor" placeholder="e.g. Dr. Vivek Murthy, Apollo Heart Center" required>
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-bottom: 0.85rem;">
             <label for="modal-apt-date">Date &amp; Time</label>
             <input type="datetime-local" id="modal-apt-date" required>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label for="modal-apt-location">Location / Suite</label>
+            <input type="text" id="modal-apt-location" placeholder="e.g. Apollo Hospital, Block C, Room 204">
+          </div>
+          <div class="form-group">
+            <label for="modal-apt-notes">Notes / Special Instructions</label>
+            <textarea id="modal-apt-notes" rows="2" placeholder="e.g. Bring previous ECG report and current medication list."></textarea>
           </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-close-modal="schedule-apt-modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Schedule Consultation</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-appointment">Confirm &amp; Save</button>
         </div>
       </form>
     </div>
@@ -665,34 +878,41 @@
       </div>
       <form id="add-prescription-form">
         <div class="modal-body">
-          <div class="form-group">
+          <div class="form-group" style="margin-bottom: 0.85rem;">
             <label for="modal-rx-member">Family Member</label>
-            <select id="modal-rx-member" required><option value="self">Primary Account Holder</option></select>
+            <select id="modal-rx-member" required>
+              <option value="self">Primary Account Holder</option>
+            </select>
           </div>
-          <div class="form-group">
+          <div class="form-group" style="margin-bottom: 0.85rem;">
             <label for="modal-rx-name">Medication Name</label>
             <input type="text" id="modal-rx-name" placeholder="e.g. Telmisartan" required>
           </div>
-          <div class="form-group">
-            <label for="modal-rx-dosage">Dosage</label>
-            <input type="text" id="modal-rx-dosage" placeholder="e.g. 40mg (1 Tablet)" required>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.85rem;">
+            <div class="form-group">
+              <label for="modal-rx-dosage">Dosage</label>
+              <input type="text" id="modal-rx-dosage" placeholder="e.g. 40mg (1 Tablet)" required>
+            </div>
+            <div class="form-group">
+              <label for="modal-rx-time">Scheduled Timing</label>
+              <input type="text" id="modal-rx-time" placeholder="e.g. 08:30 AM" required>
+            </div>
           </div>
-          <div class="form-group">
-            <label for="modal-rx-time">Scheduled Timing</label>
-            <input type="text" id="modal-rx-time" placeholder="e.g. 08:30 AM (Morning)" required>
-          </div>
-          <div class="form-group">
-            <label for="modal-rx-frequency">Frequency</label>
-            <select id="modal-rx-frequency" required>
-              <option value="Once Daily">Once Daily</option>
-              <option value="Twice Daily">Twice Daily</option>
-              <option value="Thrice Daily">Thrice Daily</option>
-              <option value="As Needed (PRN)">As Needed (PRN)</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="modal-rx-refill">Refill Days Remaining</label>
-            <input type="number" id="modal-rx-refill" min="1" max="90" value="30" required>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.85rem;">
+            <div class="form-group">
+              <label for="modal-rx-frequency">Frequency</label>
+              <select id="modal-rx-frequency" required>
+                <option value="Once Daily">Once Daily</option>
+                <option value="Twice Daily">Twice Daily</option>
+                <option value="Thrice Daily">Thrice Daily</option>
+                <option value="As Needed (SOS)">As Needed (SOS)</option>
+                <option value="Weekly">Weekly</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="modal-rx-refill">Refill Days Remaining</label>
+              <input type="number" id="modal-rx-refill" min="1" max="90" value="30" required>
+            </div>
           </div>
           <div class="form-group">
             <label for="modal-rx-instructions">Instructions</label>
@@ -701,49 +921,71 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-close-modal="add-prescription-modal">Cancel</button>
-          <button type="submit" class="btn btn-primary">Save Prescription</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-prescription">Schedule Medication</button>
         </div>
       </form>
     </div>
   </div>
 
-  
-
-  <!-- Modal: Consultation Checklist -->
-  <div id="consultation-checklist-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="checklist-modal-title">
+  <!-- Modal: Add Family Member Profile -->
+  <div id="add-member-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="member-modal-title">
     <div class="modal-dialog">
       <div class="modal-header">
-        <h3 id="checklist-modal-title">Doctor Consultation Preparation Checklist</h3>
-        <button class="modal-close-btn" data-close-modal="consultation-checklist-modal" aria-label="Close dialog">✕</button>
+        <h3 id="member-modal-title">Add Family Member</h3>
+        <button class="modal-close-btn" data-close-modal="add-member-modal" aria-label="Close dialog">✕</button>
       </div>
-      <div class="modal-body">
-        <div id="checklist-modal-body-content" style="font-size: 0.875rem; line-height: 1.6;">
-          <p><strong id="checklist-doctor-name">Dr. Vikram Mehta (Cardiology)</strong></p>
-          <ul class="task-checklist" style="margin-top: 0.75rem;">
-            <li class="task-item"><span class="task-title">Fasting overnight for 8-10 hours prior to consultation</span></li>
-            <li class="task-item"><span class="task-title">Carry daily morning and evening Blood Pressure log chart</span></li>
-            <li class="task-item"><span class="task-title">Bring previous echocardiogram and ECG records</span></li>
-            <li class="task-item"><span class="task-title">Bring current pharmacy prescription boxes</span></li>
-          </ul>
+      <form id="add-member-form">
+        <div class="modal-body">
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label for="member-name">Full Name</label>
+            <input type="text" id="member-name" placeholder="e.g. Kavita Sharma" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-bottom: 0.85rem;">
+            <div class="form-group">
+              <label for="member-relation">Relationship</label>
+              <input type="text" id="member-relation" placeholder="e.g. Sister, Grandmother, Child" required>
+            </div>
+            <div class="form-group">
+              <label for="member-age">Age</label>
+              <input type="number" id="member-age" min="1" max="120" placeholder="e.g. 52" required>
+            </div>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label for="member-blood">Blood Group</label>
+            <select id="member-blood">
+              <option value="B+">B+</option>
+              <option value="A+">A+</option>
+              <option value="O+">O+</option>
+              <option value="AB+">AB+</option>
+              <option value="B-">B-</option>
+              <option value="A-">A-</option>
+              <option value="O-">O-</option>
+              <option value="AB-">AB-</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label for="member-emergency">Emergency Contact</label>
+            <input type="text" id="member-emergency" placeholder="e.g. Anil Sharma (+91 98765 43210)">
+          </div>
+          <div class="form-group">
+            <label for="member-notes">Care Notes</label>
+            <textarea id="member-notes" rows="2" placeholder="e.g. Routine health monitoring."></textarea>
+          </div>
         </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-primary" data-close-modal="consultation-checklist-modal">Got It</button>
-      </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-close-modal="add-member-modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-save-member">Add Member</button>
+        </div>
+      </form>
     </div>
   </div>
 
-  
-       ========================================================================== -->
   <!-- Modal: Logout Confirmation -->
   <div id="logout-confirm-modal" class="modal-overlay" aria-hidden="true" role="dialog" aria-labelledby="logout-modal-title">
     <div class="modal-dialog" style="max-width: 420px; text-align: center;">
-      <div class="modal-header" style="justify-content: center; border-bottom: none; padding-bottom: 0;">
-        <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--color-error-bg); color: var(--color-error); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; margin-bottom: 0.5rem;" aria-hidden="true"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" stroke-width="2" fill="none"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></div>
-      </div>
-      <div class="modal-body" style="padding-top: 0.5rem;">
+      <div class="modal-body" style="padding-top: 1rem;">
         <h3 id="logout-modal-title" style="font-size: 1.25rem; font-weight: 700; color: var(--color-navy-950); margin-bottom: 0.5rem;">Log Out of CareSaathi?</h3>
-        <p style="font-size: 0.9rem; color: var(--color-navy-600); line-height: 1.5;">Are you sure you want to log out of CareSaathi? You will need to sign in again to access family health records.</p>
+        <p style="font-size: 0.875rem; color: var(--color-navy-600); margin-bottom: 1.5rem;">You will need to sign in again to access family records and health schedules.</p>
       </div>
       <div class="modal-footer" style="justify-content: center; gap: 0.75rem; border-top: none; padding-top: 0;">
         <button type="button" class="btn btn-secondary" data-close-modal="logout-confirm-modal" id="cancel-logout-btn">Cancel</button>
@@ -760,22 +1002,11 @@
         <button class="modal-close-btn" data-close-modal="privacy-policy-modal" aria-label="Close dialog">✕</button>
       </div>
       <div class="modal-body" style="overflow-y: auto; font-size: 0.875rem; line-height: 1.6; color: var(--color-navy-800);">
-        <p><strong>Effective Date: November 2026</strong> | <em>Informational Policy Notice</em></p>
-        <p>At <strong>CareSaathi</strong>, family trust and healthcare privacy are our foundational principles. This Privacy Policy outlines our data governance and privacy practices.</p>
-        <h4 style="margin-top: 0.75rem; margin-bottom: 0.25rem;">1. Information We Collect</h4>
-        <ul>
-          <li><strong>Account Information:</strong> Name, authenticated email address, family identifier, and role.</li>
-          <li><strong>Family Health Records:</strong> Vitals logs, medication schedules, appointment records, and caregiver handoff notes.</li>
-          <li><strong>Authentication Tokens:</strong> Secure OAuth tokens from Google identity verification.</li>
-        </ul>
-        <h4 style="margin-top: 0.75rem; margin-bottom: 0.25rem;">2. How Family Information is Used</h4>
-        <p>Information is used exclusively to facilitate care coordination within your designated family circle. We never sell, monetize, or broker healthcare data to third parties.</p>
-        <h4 style="margin-top: 0.75rem; margin-bottom: 0.25rem;">3. Family Access Boundaries &amp; Role-Based Isolation</h4>
-        <p>CareSaathi enforces strict multi-tenant cryptographic and database-level isolation. Secondary caregivers can only view records explicitly assigned to them by the Family Owner.</p>
-        <h4 style="margin-top: 0.75rem; margin-bottom: 0.25rem;">4. AI Assistant Context Filtering</h4>
-        <p>The CareSaathi AI assistant only accesses health records within the authenticated user's permission scope. Medical queries are processed with strict privacy guardrails and general informational disclaimers.</p>
-        <h4 style="margin-top: 0.75rem; margin-bottom: 0.25rem;">5. Data Deletion &amp; Account Rights</h4>
-        <p>Family Owners may request complete account data deletion and profile removal at any time via Settings.</p>
+        <p><strong>Effective Date: November 2026</strong> | <em>CareSaathi Patient Privacy &amp; Data Security Protocol</em></p>
+        <h4 style="margin-top: 0.75rem; margin-bottom: 0.25rem;">1. Commitment to Health Data Privacy</h4>
+        <p>CareSaathi operates on strict data isolation standards. Family health information is accessible strictly to authorized coordinators and permitted members.</p>
+        <h4 style="margin-top: 0.75rem; margin-bottom: 0.25rem;">2. Security Standards</h4>
+        <p>All passwords are encrypted with salt-protected scrypt hashing. Application tokens expire automatically every 24 hours.</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" data-close-modal="privacy-policy-modal">Understood</button>
@@ -793,13 +1024,9 @@
       <div class="modal-body" style="overflow-y: auto; font-size: 0.875rem; line-height: 1.6; color: var(--color-navy-800);">
         <p><strong>Effective Date: November 2026</strong> | <em>Terms of Platform Use</em></p>
         <h4 style="margin-top: 0.75rem; margin-bottom: 0.25rem;">1. Purpose of CareSaathi</h4>
-        <p>CareSaathi is a family health and elderly-care coordination platform designed to help family members and caregivers collaborate on schedules, vitals logs, and doctor appointments.</p>
+        <p>CareSaathi is a family health and elderly-care coordination platform designed to help family members collaborate on schedules, vitals logs, and doctor appointments.</p>
         <h4 style="margin-top: 0.75rem; margin-bottom: 0.25rem;">2. Non-Clinical &amp; Non-Diagnostic Disclaimer</h4>
-        <p><strong>IMPORTANT MEDICAL DISCLAIMER:</strong> CareSaathi is NOT a medical diagnostic tool or emergency response service. The software, including the AI assistant and reminders, provides informational coordination only and does NOT constitute medical advice, diagnosis, or treatment. Always consult licensed medical professionals for clinical decisions.</p>
-        <h4 style="margin-top: 0.75rem; margin-bottom: 0.25rem;">3. User Responsibilities &amp; Authorized Consent</h4>
-        <p>Users must have legal authorization or family consent before entering family members' health data or assigning caregiver roles.</p>
-        <h4 style="margin-top: 0.75rem; margin-bottom: 0.25rem;">4. Medication Reporting</h4>
-        <p>A "Reported Taken" status indicates user-recorded adherence and does not represent independent clinical verification of medication consumption.</p>
+        <p><strong>IMPORTANT MEDICAL DISCLAIMER:</strong> CareSaathi is NOT a medical diagnostic tool or emergency response service. The software, including the AI assistant and reminders, provides informational coordination only.</p>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-primary" data-close-modal="terms-modal">Agree &amp; Close</button>

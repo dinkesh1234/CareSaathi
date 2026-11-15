@@ -2671,4 +2671,95 @@ button, input[type="button"], input[type="submit"], select, .nav-link {
   min-height: 44px;
 }
 
+/* --- Interactive Monthly Calendar Component (Phase 3 Requirement) --- */
+.calendar-card {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.calendar-days-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.calendar-day-cell {
+  min-height: 64px;
+  background-color: #FFFFFF;
+  border: 1px solid #F1F5F9;
+  border-radius: 8px;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.calendar-day-cell:hover {
+  background-color: #F0FDFA;
+  border-color: #0F766E;
+}
+
+.calendar-day-cell.other-month {
+  background-color: #F8FAFC;
+  color: #94A3B8;
+  opacity: 0.6;
+}
+
+.calendar-day-cell.today {
+  border: 2px solid #0F766E;
+  font-weight: 700;
+}
+
+.calendar-day-cell.selected {
+  background-color: #F0FDFA;
+  border: 2px solid #0F766E;
+  box-shadow: 0 0 0 2px rgba(15, 118, 110, 0.15);
+}
+
+.cal-day-num {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.calendar-day-cell.other-month .cal-day-num {
+  color: #94A3B8;
+}
+
+.cal-day-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px;
+  margin-top: 4px;
+}
+
+.cal-apt-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #0F766E;
+  display: inline-block;
+}
+
+.cal-apt-pill {
+  font-size: 0.65rem;
+  background-color: #CCFBF1;
+  color: #0F766E;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  .calendar-layout {
+    grid-template-columns: 1fr !important;
+  }
+}
+
 

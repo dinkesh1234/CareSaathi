@@ -1,10 +1,9 @@
 /**
  * CareSaathi — Family Health & Care Coordination Platform
- * Frontend Application Controller
+ * Frontend Application Controller & Monthly Calendar Engine
  *
- * Clean, production-ready, white-theme healthcare SaaS controller.
- * Enforces strict login-first gate, RBAC data isolation, live Gemini AI,
- * and robust personal health, medication, and appointment management.
+ * Implements login-first flow, monthly interactive calendar,
+ * family profiles, medication schedules, care continuity, and Gemini AI.
  */
 
 'use strict';
@@ -16,8 +15,6 @@ const isLocalhost =
     window.location.hostname === '127.0.0.1' ||
     window.location.hostname === '');
 
-// In production on Vercel, requests use the relative /api rewrite proxy.
-// In local development, direct calls to the local FastAPI backend (http://127.0.0.1:8000).
 const resolvedBaseUrl =
   (typeof window !== 'undefined' && window.CARESAATHI_API_URL) ||
   (isLocalhost && typeof window !== 'undefined' && window.location.port !== '8000'
@@ -32,6 +29,9 @@ const CONFIG = {
 };
 
 // --- Application State ---
+const todayObj = new Date();
+const todayDateStr = todayObj.toISOString().split('T')[0];
+
 const appState = {
   currentView: 'dashboard',
   currentTheme: 'light',
@@ -44,6 +44,13 @@ const appState = {
   appointments: [],
   aiChatHistory: [],
   isAIGenerating: false,
+
+  // Calendar State
+  calendar: {
+    year: todayObj.getFullYear(),
+    month: todayObj.getMonth(), // 0-indexed (10 = November)
+    selectedDateStr: todayDateStr,
+  },
 };
 
 // --- DOM Cache ---
@@ -58,7 +65,7 @@ const dom = {
   navLinks: document.querySelectorAll('.nav-link'),
   views: document.querySelectorAll('.app-view'),
 
-  // Topbar & Profile Menu
+  // Topbar & Profile
   userProfilePill: document.getElementById('user-profile-pill'),
   userProfileDropdown: document.getElementById('user-profile-dropdown'),
   currentUserAvatar: document.getElementById('current-user-avatar'),
@@ -73,7 +80,7 @@ const dom = {
   sidebarLogoutBtn: document.getElementById('sidebar-logout-btn'),
   globalSearchInput: document.getElementById('global-search-input'),
 
-  // Auth Forms & Tabs
+  // Auth Elements
   authTabLogin: document.getElementById('auth-tab-login'),
   authTabSignup: document.getElementById('auth-tab-signup'),
   emailLoginForm: document.getElementById('email-login-form'),
@@ -90,13 +97,15 @@ const dom = {
   welcomeUserName: document.getElementById('welcome-user-name'),
   welcomeSubtext: document.getElementById('welcome-subtext'),
   todayDateDisplay: document.getElementById('today-date-display'),
+  metricFamilyCount: document.getElementById('metric-family-count'),
+  metricMedsCount: document.getElementById('metric-meds-count'),
+  metricAptsCount: document.getElementById('metric-apts-count'),
   dashProfileName: document.getElementById('dash-profile-name'),
   dashProfileAge: document.getElementById('dash-profile-age'),
   dashProfileBlood: document.getElementById('dash-profile-blood'),
   dashProfileContact: document.getElementById('dash-profile-contact'),
   dashProfileAllergies: document.getElementById('dash-profile-allergies'),
   dashProfileNotes: document.getElementById('dash-profile-notes'),
-  dashProfileStatusText: document.getElementById('dash-profile-status-text'),
   chipProfileStatus: document.getElementById('chip-profile-status'),
   dashboardMedTimeline: document.getElementById('dashboard-med-timeline'),
   chipMedsCount: document.getElementById('chip-meds-count'),
@@ -106,7 +115,35 @@ const dom = {
   dashAiQuickForm: document.getElementById('dash-ai-quick-form'),
   dashAiQuickInput: document.getElementById('dash-ai-quick-input'),
 
-  // Settings View Elements
+  // Views & Sections
+  familyMembersGrid: document.getElementById('family-members-grid'),
+  medicationsFullList: document.getElementById('medications-full-list'),
+  medStatTotal: document.getElementById('med-stat-total'),
+  medStatTaken: document.getElementById('med-stat-taken'),
+  medStatRefill: document.getElementById('med-stat-refill'),
+
+  // Calendar Elements
+  calendarMonthYear: document.getElementById('calendar-month-year'),
+  calendarDaysGrid: document.getElementById('calendar-days-grid'),
+  calPrevMonthBtn: document.getElementById('cal-prev-month-btn'),
+  calNextMonthBtn: document.getElementById('cal-next-month-btn'),
+  calTodayBtn: document.getElementById('cal-today-btn'),
+  selectedDateTitle: document.getElementById('selected-date-title'),
+  selectedDateSubtitle: document.getElementById('selected-date-subtitle'),
+  selectedDateAptsContainer: document.getElementById('selected-date-apts-container'),
+  calQuickAddBtn: document.getElementById('cal-quick-add-btn'),
+
+  // AI Assistant Elements
+  aiChatMessages: document.getElementById('ai-chat-messages'),
+  aiChatForm: document.getElementById('ai-chat-form'),
+  aiChatInput: document.getElementById('ai-chat-input'),
+  aiChatSendBtn: document.getElementById('ai-chat-send-btn'),
+  aiTypingIndicator: document.getElementById('ai-typing-indicator'),
+  aiEmptyState: document.getElementById('ai-empty-state'),
+  aiClearChatBtn: document.getElementById('ai-clear-chat-btn'),
+  aiNewChatBtn: document.getElementById('ai-new-chat-btn'),
+
+  // Settings Elements
   settingsUserName: document.getElementById('settings-user-name'),
   settingsUserEmail: document.getElementById('settings-user-email'),
   settingsUserAvatar: document.getElementById('settings-user-avatar'),
@@ -116,19 +153,6 @@ const dom = {
   settingsHealthAllergies: document.getElementById('settings-health-allergies'),
   settingsLogoutBtn: document.getElementById('settings-logout-btn'),
 
-  // AI Assistant View Elements
-  aiChatMessages: document.getElementById('ai-chat-messages'),
-  aiChatForm: document.getElementById('ai-chat-form'),
-  aiChatInput: document.getElementById('ai-chat-input'),
-  aiChatSendBtn: document.getElementById('ai-chat-send-btn'),
-  aiTypingIndicator: document.getElementById('ai-typing-indicator'),
-  aiEmptyState: document.getElementById('ai-empty-state'),
-  aiClearChatBtn: document.getElementById('ai-clear-chat-btn'),
-  aiNewChatBtn: document.getElementById('ai-new-chat-btn'),
-  aiContextUserName: document.getElementById('ai-context-user-name'),
-  aiContextRoleBadge: document.getElementById('ai-context-role-badge'),
-  aiContextScopeText: document.getElementById('ai-context-scope-text'),
-
   // Modals
   onboardingModal: document.getElementById('onboarding-modal'),
   onboardProfileForm: document.getElementById('onboard-profile-form'),
@@ -136,6 +160,8 @@ const dom = {
   scheduleAptForm: document.getElementById('schedule-apt-form'),
   addPrescriptionModal: document.getElementById('add-prescription-modal'),
   addPrescriptionForm: document.getElementById('add-prescription-form'),
+  addMemberModal: document.getElementById('add-member-modal'),
+  addMemberForm: document.getElementById('add-member-form'),
   logoutConfirmModal: document.getElementById('logout-confirm-modal'),
   confirmLogoutBtn: document.getElementById('confirm-logout-btn'),
   cancelLogoutBtn: document.getElementById('cancel-logout-btn'),
@@ -238,6 +264,11 @@ function switchView(viewId) {
   }
   window.scrollTo({ top: 0, behavior: 'smooth' });
   closeMobileSidebar();
+
+  // If switching to calendar view, ensure calendar is rendered
+  if (viewId === 'appointments') {
+    renderMonthlyCalendar();
+  }
 }
 
 function openMobileSidebar() {
@@ -283,7 +314,7 @@ async function performLogout() {
         },
       });
     } catch (e) {
-      console.warn('Backend logout notification warning:', e);
+      console.warn('Backend logout warning:', e);
     }
   }
 
@@ -312,12 +343,13 @@ function applyUserSession(user) {
   const email = user.email || 'user@example.com';
   const role = (user.role || 'family_owner').replace('_', ' ').toUpperCase();
 
-  const initials = rawName
-    .split(' ')
-    .map((n) => n[0])
-    .join('')
-    .substring(0, 2)
-    .toUpperCase() || 'CS';
+  const initials =
+    rawName
+      .split(' ')
+      .map((n) => n[0])
+      .join('')
+      .substring(0, 2)
+      .toUpperCase() || 'CS';
 
   // Topbar
   if (dom.currentUserAvatar) dom.currentUserAvatar.textContent = initials;
@@ -342,10 +374,6 @@ function applyUserSession(user) {
     dom.welcomeSubtext.textContent = `Family healthcare coordination dashboard for ${rawName}.`;
   }
 
-  // AI Context
-  if (dom.aiContextUserName) dom.aiContextUserName.textContent = rawName;
-  if (dom.aiContextRoleBadge) dom.aiContextRoleBadge.textContent = role;
-
   // Today's Date
   if (dom.todayDateDisplay) {
     const today = new Date();
@@ -357,7 +385,7 @@ function applyUserSession(user) {
     });
   }
 
-  // Load active data
+  // Load all application data
   loadFamilyProfiles();
   loadMedications();
   loadAppointments();
@@ -394,7 +422,7 @@ async function selectDemoAccount(demoId = 'user_anil_01') {
   applyUserSession(selected);
   revealAppShell();
   switchView('dashboard');
-  showNotificationToast('Signed in with Demo Account (Anil Sharma)');
+  showNotificationToast('Signed in as Anil Sharma (Demo Account)');
   logActivity('Signed in with Demo Account', 'Just now • Demo Auth');
 }
 
@@ -564,20 +592,21 @@ async function loadFamilyProfiles() {
     const profiles = await res.json();
     appState.familyProfiles = profiles;
 
+    if (dom.metricFamilyCount) {
+      dom.metricFamilyCount.textContent = `${profiles.length} Member${profiles.length === 1 ? '' : 's'}`;
+    }
+
     const primaryProfile = profiles && profiles.length > 0 ? profiles[0] : null;
 
     if (primaryProfile) {
-      // Dashboard Health Card
       if (dom.dashProfileName) dom.dashProfileName.textContent = primaryProfile.full_name;
       if (dom.dashProfileAge) dom.dashProfileAge.textContent = `${primaryProfile.age} yrs (${primaryProfile.age_group})`;
       if (dom.dashProfileBlood) dom.dashProfileBlood.textContent = primaryProfile.blood_group || 'Not recorded';
       if (dom.dashProfileContact) dom.dashProfileContact.textContent = primaryProfile.emergency_contact || 'None';
       if (dom.dashProfileAllergies) dom.dashProfileAllergies.textContent = primaryProfile.allergies || 'None reported';
       if (dom.dashProfileNotes) dom.dashProfileNotes.textContent = primaryProfile.care_notes || 'Stable';
-      if (dom.dashProfileStatusText) dom.dashProfileStatusText.textContent = 'Active • Verified';
       if (dom.chipProfileStatus) dom.chipProfileStatus.textContent = 'Profile Complete';
 
-      // Settings Health Card
       if (dom.settingsHealthBlood) dom.settingsHealthBlood.textContent = primaryProfile.blood_group || 'Not recorded';
       if (dom.settingsHealthAge) dom.settingsHealthAge.textContent = `${primaryProfile.age} yrs (${primaryProfile.age_group})`;
       if (dom.settingsHealthEmergency) dom.settingsHealthEmergency.textContent = primaryProfile.emergency_contact || 'None listed';
@@ -599,17 +628,77 @@ async function loadFamilyProfiles() {
         .join('');
     }
 
-    // AI context member count
-    if (dom.aiContextScopeText) {
-      dom.aiContextScopeText.textContent = `${profiles.length} member profile${profiles.length === 1 ? '' : 's'} authorized`;
-    }
+    // Render Family Members Full Grid
+    renderFamilyMembersGrid(profiles);
   } catch (err) {
     console.warn('Could not load family profiles:', err);
   }
 }
 
+function renderFamilyMembersGrid(profiles) {
+  if (!dom.familyMembersGrid) return;
+
+  if (!Array.isArray(profiles) || profiles.length === 0) {
+    dom.familyMembersGrid.innerHTML = `
+      <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: #F8FAFC; border: 1px dashed #E5E7EB; border-radius: 12px;">
+        <h4 style="color: #111827; margin-bottom: 0.5rem;">No family profiles recorded yet</h4>
+        <p style="color: #64748B; font-size: 0.875rem; margin-bottom: 1rem;">Add elderly parents, children, or family members to begin coordinated care.</p>
+        <button type="button" class="btn btn-primary" onclick="document.getElementById('add-member-modal').classList.add('active')">+ Add First Family Member</button>
+      </div>
+    `;
+    return;
+  }
+
+  dom.familyMembersGrid.innerHTML = profiles
+    .map((p) => {
+      const isSenior = p.age >= 60;
+      return `
+        <div class="card family-member-card" style="border-radius: 12px; border: 1px solid #E5E7EB; background: #FFFFFF; padding: 1.25rem;">
+          <div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 0.75rem;">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <div style="width: 44px; height: 44px; border-radius: 50%; background: ${isSenior ? '#FEF3C7' : '#F0FDFA'}; color: ${isSenior ? '#B45309' : '#0F766E'}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1rem;">
+                ${p.full_name.substring(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <h4 style="font-size: 1rem; font-weight: 700; color: #111827; margin: 0;">${escapeHTML(p.full_name)}</h4>
+                <span style="font-size: 0.75rem; color: #64748B;">${escapeHTML(p.relationship)} • ${p.age} yrs</span>
+              </div>
+            </div>
+            <span class="badge ${isSenior ? 'badge-warning' : 'badge-teal'}" style="font-size: 0.7rem;">
+              ${p.age_group ? p.age_group.toUpperCase() : 'MEMBER'}
+            </span>
+          </div>
+
+          <div style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 8px; padding: 0.75rem; font-size: 0.8rem; margin-bottom: 0.75rem;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+              <span style="color: #64748B;">Blood Group:</span>
+              <strong style="color: #111827;">${escapeHTML(p.blood_group || 'Not recorded')}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.25rem;">
+              <span style="color: #64748B;">Emergency Contact:</span>
+              <strong style="color: #111827; text-align: right; max-width: 60%;">${escapeHTML(p.emergency_contact || 'None')}</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #64748B;">Allergies:</span>
+              <strong style="color: ${p.allergies ? '#B91C1C' : '#111827'};">${escapeHTML(p.allergies || 'None')}</strong>
+            </div>
+          </div>
+
+          <p style="font-size: 0.8rem; color: #4B5563; margin: 0 0 0.85rem 0; line-height: 1.4;">
+            <strong>Care Notes:</strong> ${escapeHTML(p.care_notes || 'Stable routine care.')}
+          </p>
+
+          <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+            <button type="button" class="btn btn-sm btn-outline edit-member-btn" data-profile-id="${p.profile_id}" onclick="document.getElementById('onboarding-modal').classList.add('active')">Edit Profile</button>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
 async function loadMedications() {
-  if (!appState.activeToken || !dom.dashboardMedTimeline) return;
+  if (!appState.activeToken) return;
 
   try {
     const res = await fetch(`${CONFIG.API_BASE_URL}/api/medications`, {
@@ -625,49 +714,108 @@ async function loadMedications() {
     if (dom.chipMedsCount) {
       dom.chipMedsCount.textContent = `${meds.length} Prescribed`;
     }
-
-    if (!Array.isArray(meds) || meds.length === 0) {
-      dom.dashboardMedTimeline.innerHTML = `
-        <div class="empty-state-box" style="text-align: center; padding: 2rem 1rem; border: 1px dashed #E5E7EB; border-radius: 8px;">
-          <p style="color: #64748B; font-size: 0.875rem; margin-bottom: 0.75rem;">No active medications scheduled yet.</p>
-          <button type="button" class="btn btn-sm btn-primary" id="open-add-med-dash-btn">+ Add First Prescription</button>
-        </div>
-      `;
-      const btn = document.getElementById('open-add-med-dash-btn');
-      if (btn && dom.addPrescriptionModal) {
-        btn.addEventListener('click', () => dom.addPrescriptionModal.classList.add('active'));
-      }
-      return;
+    if (dom.metricMedsCount) {
+      dom.metricMedsCount.textContent = `${meds.length} Scheduled`;
     }
 
-    dom.dashboardMedTimeline.innerHTML = meds
-      .map((med) => {
-        const isTaken = med.status_today === 'reported_taken';
-        return `
-          <div class="med-schedule-item ${isTaken ? 'taken' : ''}" data-med-id="${med.medication_id}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #E5E7EB;">
-            <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
-              <div style="width: 32px; height: 32px; border-radius: 6px; background: ${isTaken ? '#F0FDF4' : '#F0FDFA'}; color: ${isTaken ? '#166534' : '#0F766E'}; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0;">
-                ${isTaken ? '✓' : 'Rx'}
-              </div>
-              <div>
-                <div style="font-weight: 600; font-size: 0.875rem; color: #111827;">${escapeHTML(med.name)} <span style="font-weight: 400; color: #64748B;">(${escapeHTML(med.dosage)})</span></div>
-                <div style="font-size: 0.75rem; color: #64748B;">For: <strong>${escapeHTML(med.patient_name)}</strong> • ${escapeHTML(med.schedule_time)} (${escapeHTML(med.frequency)})</div>
-                ${med.instructions ? `<div style="font-size: 0.725rem; color: #0F766E; margin-top: 2px;">Note: ${escapeHTML(med.instructions)}</div>` : ''}
-              </div>
-            </div>
-            <div style="text-align: right; flex-shrink: 0;">
-              <button type="button" class="btn btn-sm ${isTaken ? 'btn-secondary' : 'btn-primary'} toggle-med-status-btn" data-med-id="${med.medication_id}" data-current-status="${med.status_today}">
-                ${isTaken ? 'Taken ✓' : 'Mark Taken'}
-              </button>
-              <div style="font-size: 0.7rem; color: #64748B; margin-top: 4px;">Supply: ${med.refill_days_left}d left</div>
-            </div>
-          </div>
-        `;
-      })
-      .join('');
+    // Update Medication View Metrics
+    if (dom.medStatTotal) dom.medStatTotal.textContent = `${meds.length} Meds`;
+    const takenCount = meds.filter((m) => m.status_today === 'reported_taken').length;
+    if (dom.medStatTaken) dom.medStatTaken.textContent = `${takenCount} of ${meds.length}`;
+    const lowRefillCount = meds.filter((m) => m.refill_days_left <= 7).length;
+    if (dom.medStatRefill) dom.medStatRefill.textContent = `${lowRefillCount} Refill Alert${lowRefillCount === 1 ? '' : 's'}`;
+
+    // Render Dashboard Snapshot
+    renderDashboardMedications(meds);
+
+    // Render Full Medication Screen
+    renderFullMedicationsList(meds);
   } catch (err) {
     console.warn('Could not load medications:', err);
   }
+}
+
+function renderDashboardMedications(meds) {
+  if (!dom.dashboardMedTimeline) return;
+
+  if (!Array.isArray(meds) || meds.length === 0) {
+    dom.dashboardMedTimeline.innerHTML = `
+      <div class="empty-state-box" style="text-align: center; padding: 2rem 1rem; border: 1px dashed #E5E7EB; border-radius: 8px;">
+        <p style="color: #64748B; font-size: 0.875rem; margin-bottom: 0.75rem;">No active medications scheduled yet.</p>
+        <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('add-prescription-modal').classList.add('active')">+ Add First Prescription</button>
+      </div>
+    `;
+    return;
+  }
+
+  dom.dashboardMedTimeline.innerHTML = meds
+    .map((med) => {
+      const isTaken = med.status_today === 'reported_taken';
+      return `
+        <div class="med-schedule-item ${isTaken ? 'taken' : ''}" data-med-id="${med.medication_id}" style="display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #E5E7EB;">
+          <div style="display: flex; align-items: flex-start; gap: 0.75rem;">
+            <div style="width: 32px; height: 32px; border-radius: 6px; background: ${isTaken ? '#F0FDF4' : '#F0FDFA'}; color: ${isTaken ? '#166534' : '#0F766E'}; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0;">
+              ${isTaken ? '✓' : 'Rx'}
+            </div>
+            <div>
+              <div style="font-weight: 600; font-size: 0.875rem; color: #111827;">${escapeHTML(med.name)} <span style="font-weight: 400; color: #64748B;">(${escapeHTML(med.dosage)})</span></div>
+              <div style="font-size: 0.75rem; color: #64748B;">For: <strong>${escapeHTML(med.patient_name)}</strong> • ${escapeHTML(med.schedule_time)} (${escapeHTML(med.frequency)})</div>
+              ${med.instructions ? `<div style="font-size: 0.725rem; color: #0F766E; margin-top: 2px;">Note: ${escapeHTML(med.instructions)}</div>` : ''}
+            </div>
+          </div>
+          <div style="text-align: right; flex-shrink: 0;">
+            <button type="button" class="btn btn-sm ${isTaken ? 'btn-secondary' : 'btn-primary'} toggle-med-status-btn" data-med-id="${med.medication_id}" data-current-status="${med.status_today}">
+              ${isTaken ? 'Taken ✓' : 'Mark Taken'}
+            </button>
+            <div style="font-size: 0.7rem; color: #64748B; margin-top: 4px;">Supply: ${med.refill_days_left}d left</div>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+function renderFullMedicationsList(meds) {
+  if (!dom.medicationsFullList) return;
+
+  if (!Array.isArray(meds) || meds.length === 0) {
+    dom.medicationsFullList.innerHTML = `
+      <div style="text-align: center; padding: 2rem; color: #64748B;">No prescriptions recorded.</div>
+    `;
+    return;
+  }
+
+  dom.medicationsFullList.innerHTML = meds
+    .map((med) => {
+      const isTaken = med.status_today === 'reported_taken';
+      const isLowRefill = med.refill_days_left <= 7;
+      return `
+        <div style="background: #FFFFFF; border: 1px solid #E5E7EB; border-radius: 10px; padding: 1.25rem; margin-bottom: 1rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 42px; height: 42px; border-radius: 8px; background: ${isTaken ? '#F0FDF4' : '#F0FDFA'}; color: ${isTaken ? '#166534' : '#0F766E'}; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.95rem;">
+              Rx
+            </div>
+            <div>
+              <h4 style="font-size: 1rem; font-weight: 700; color: #111827; margin: 0 0 2px 0;">${escapeHTML(med.name)} <span style="font-weight: 500; color: #64748B;">${escapeHTML(med.dosage)}</span></h4>
+              <div style="font-size: 0.8rem; color: #64748B;">Patient: <strong>${escapeHTML(med.patient_name)}</strong> • Scheduled: <strong>${escapeHTML(med.schedule_time)}</strong> (${escapeHTML(med.frequency)})</div>
+              <div style="font-size: 0.75rem; color: #4B5563; margin-top: 4px;">Instructions: ${escapeHTML(med.instructions || 'Take as directed')}</div>
+            </div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 1rem;">
+            <div style="text-align: right;">
+              <span class="badge ${isLowRefill ? 'badge-warning' : 'badge-teal'}" style="font-size: 0.75rem;">
+                ${med.refill_days_left} Days Supply
+              </span>
+              <div style="font-size: 0.7rem; color: #64748B; margin-top: 4px;">Status: ${isTaken ? 'Reported Taken' : 'Pending Dose'}</div>
+            </div>
+            <button type="button" class="btn ${isTaken ? 'btn-secondary' : 'btn-primary'} toggle-med-status-btn" data-med-id="${med.medication_id}" data-current-status="${med.status_today}" style="min-width: 110px;">
+              ${isTaken ? 'Taken ✓' : 'Mark Taken'}
+            </button>
+          </div>
+        </div>
+      `;
+    })
+    .join('');
 }
 
 async function markMedicationStatus(medId, currentStatus) {
@@ -703,8 +851,10 @@ async function markMedicationStatus(medId, currentStatus) {
   }
 }
 
+// --- Appointments & Monthly Calendar Engine (PHASE 3) ---
+
 async function loadAppointments() {
-  if (!appState.activeToken || !dom.dashboardAppointmentsList) return;
+  if (!appState.activeToken) return;
 
   try {
     const res = await fetch(`${CONFIG.API_BASE_URL}/api/appointments`, {
@@ -720,54 +870,266 @@ async function loadAppointments() {
     if (dom.chipAptsCount) {
       dom.chipAptsCount.textContent = `${apts.length} Scheduled`;
     }
-
-    if (!Array.isArray(apts) || apts.length === 0) {
-      dom.dashboardAppointmentsList.innerHTML = `
-        <div class="empty-state-box" style="text-align: center; padding: 2rem 1rem; border: 1px dashed #E5E7EB; border-radius: 8px;">
-          <p style="color: #64748B; font-size: 0.875rem; margin-bottom: 0.75rem;">No consultations scheduled yet.</p>
-          <button type="button" class="btn btn-sm btn-primary" id="open-schedule-apt-btn">+ Book Consultation</button>
-        </div>
-      `;
-      const btn = document.getElementById('open-schedule-apt-btn');
-      if (btn && dom.scheduleAptModal) {
-        btn.addEventListener('click', () => dom.scheduleAptModal.classList.add('active'));
-      }
-      return;
+    if (dom.metricAptsCount) {
+      dom.metricAptsCount.textContent = `${apts.length} Consultations`;
     }
 
-    dom.dashboardAppointmentsList.innerHTML = apts
-      .map((apt) => {
-        const hasEscort = !!apt.escort_name;
-        return `
-          <div class="appointment-card-item" data-apt-id="${apt.appointment_id}" style="padding: 0.85rem 0; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; justify-content: space-between;">
-            <div>
-              <div style="font-weight: 600; font-size: 0.875rem; color: #111827;">${escapeHTML(apt.specialty)} • ${escapeHTML(apt.doctor_name)}</div>
-              <div style="font-size: 0.75rem; color: #64748B; margin-top: 2px;">Patient: <strong>${escapeHTML(apt.patient_name)}</strong> • 📅 ${escapeHTML(apt.appointment_date)}</div>
-              <div style="font-size: 0.725rem; color: #64748B; margin-top: 2px;">📍 ${escapeHTML(apt.location)}</div>
-            </div>
-            <div style="text-align: right; flex-shrink: 0;">
-              <span class="badge" style="background: ${hasEscort ? '#F0FDF4' : '#FEF3C7'}; color: ${hasEscort ? '#166534' : '#92400E'}; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.725rem; font-weight: 600;">
-                ${hasEscort ? `Escort: ${escapeHTML(apt.escort_name)}` : 'Escort Needed'}
-              </span>
-              ${
-                !hasEscort
-                  ? `<div style="margin-top: 4px;"><button type="button" class="btn btn-sm btn-outline confirm-escort-btn" data-apt-id="${apt.appointment_id}" style="font-size: 0.7rem; padding: 2px 6px;">Accompany</button></div>`
-                  : ''
-              }
-            </div>
-          </div>
-        `;
-      })
-      .join('');
+    // Render Dashboard Upcoming Consultations
+    renderDashboardAppointments(apts);
+
+    // Render Monthly Calendar & Selected Date Consultations
+    renderMonthlyCalendar();
   } catch (err) {
     console.warn('Could not load appointments:', err);
   }
 }
 
+function renderDashboardAppointments(apts) {
+  if (!dom.dashboardAppointmentsList) return;
+
+  if (!Array.isArray(apts) || apts.length === 0) {
+    dom.dashboardAppointmentsList.innerHTML = `
+      <div class="empty-state-box" style="text-align: center; padding: 2rem 1rem; border: 1px dashed #E5E7EB; border-radius: 8px;">
+        <p style="color: #64748B; font-size: 0.875rem; margin-bottom: 0.75rem;">No consultations scheduled yet.</p>
+        <button type="button" class="btn btn-sm btn-primary" onclick="document.getElementById('schedule-apt-modal').classList.add('active')">+ Book Consultation</button>
+      </div>
+    `;
+    return;
+  }
+
+  dom.dashboardAppointmentsList.innerHTML = apts
+    .map((apt) => {
+      const hasEscort = !!apt.escort_name;
+      return `
+        <div class="appointment-card-item" data-apt-id="${apt.appointment_id}" style="padding: 0.85rem 0; border-bottom: 1px solid #E5E7EB; display: flex; align-items: center; justify-content: space-between;">
+          <div>
+            <div style="font-weight: 600; font-size: 0.875rem; color: #111827;">${escapeHTML(apt.specialty)} • ${escapeHTML(apt.doctor_name)}</div>
+            <div style="font-size: 0.75rem; color: #64748B; margin-top: 2px;">Patient: <strong>${escapeHTML(apt.patient_name)}</strong> • 📅 ${escapeHTML(apt.appointment_date)}</div>
+            <div style="font-size: 0.725rem; color: #64748B; margin-top: 2px;">📍 ${escapeHTML(apt.location)}</div>
+          </div>
+          <div style="text-align: right; flex-shrink: 0;">
+            <span class="badge" style="background: ${hasEscort ? '#F0FDF4' : '#FEF3C7'}; color: ${hasEscort ? '#166534' : '#92400E'}; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.725rem; font-weight: 600;">
+              ${hasEscort ? `Escort: ${escapeHTML(apt.escort_name)}` : 'Escort Needed'}
+            </span>
+            ${
+              !hasEscort
+                ? `<div style="margin-top: 4px;"><button type="button" class="btn btn-sm btn-outline confirm-escort-btn" data-apt-id="${apt.appointment_id}" style="font-size: 0.7rem; padding: 2px 6px;">Accompany</button></div>`
+                : ''
+            }
+          </div>
+        </div>
+      `;
+    })
+    .join('');
+}
+
+/**
+ * Monthly Calendar Renderer
+ * Calculates days for current month, highlights today, marks appointments, and binds selection.
+ */
+function renderMonthlyCalendar() {
+  if (!dom.calendarDaysGrid || !dom.calendarMonthYear) return;
+
+  const year = appState.calendar.year;
+  const month = appState.calendar.month;
+
+  const monthNames = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December',
+  ];
+  dom.calendarMonthYear.textContent = `${monthNames[month]} ${year}`;
+
+  const firstDayIndex = new Date(year, month, 1).getDay(); // 0 = Sunday
+  const totalDaysInMonth = new Date(year, month + 1, 0).getDate();
+  const totalDaysPrevMonth = new Date(year, month, 0).getDate();
+
+  const cells = [];
+
+  // Previous month trailing days
+  for (let i = firstDayIndex - 1; i >= 0; i--) {
+    const dayNum = totalDaysPrevMonth - i;
+    const prevMonthIdx = month === 0 ? 11 : month - 1;
+    const prevYear = month === 0 ? year - 1 : year;
+    const mStr = String(prevMonthIdx + 1).padStart(2, '0');
+    const dStr = String(dayNum).padStart(2, '0');
+    const cellDateStr = `${prevYear}-${mStr}-${dStr}`;
+
+    cells.push({
+      dateStr: cellDateStr,
+      dayNum: dayNum,
+      isOtherMonth: true,
+    });
+  }
+
+  // Current month days
+  for (let d = 1; d <= totalDaysInMonth; d++) {
+    const mStr = String(month + 1).padStart(2, '0');
+    const dStr = String(d).padStart(2, '0');
+    const cellDateStr = `${year}-${mStr}-${dStr}`;
+
+    cells.push({
+      dateStr: cellDateStr,
+      dayNum: d,
+      isOtherMonth: false,
+    });
+  }
+
+  // Next month leading days (to complete grid to 35 or 42 cells)
+  const remainingCells = (7 - (cells.length % 7)) % 7;
+  for (let n = 1; n <= remainingCells; n++) {
+    const nextMonthIdx = month === 11 ? 0 : month + 1;
+    const nextYear = month === 11 ? year + 1 : year;
+    const mStr = String(nextMonthIdx + 1).padStart(2, '0');
+    const dStr = String(n).padStart(2, '0');
+    const cellDateStr = `${nextYear}-${mStr}-${dStr}`;
+
+    cells.push({
+      dateStr: cellDateStr,
+      dayNum: n,
+      isOtherMonth: true,
+    });
+  }
+
+  // Map appointments to date strings
+  const aptsByDate = {};
+  (appState.appointments || []).forEach((apt) => {
+    // extract YYYY-MM-DD from appointment_date
+    const dateMatch = apt.appointment_date.match(/\d{4}-\d{2}-\d{2}/);
+    if (dateMatch) {
+      const dKey = dateMatch[0];
+      if (!aptsByDate[dKey]) aptsByDate[dKey] = [];
+      aptsByDate[dKey].push(apt);
+    }
+  });
+
+  // Render day cells
+  dom.calendarDaysGrid.innerHTML = cells
+    .map((c) => {
+      const isToday = c.dateStr === todayDateStr;
+      const isSelected = c.dateStr === appState.calendar.selectedDateStr;
+      const dayApts = aptsByDate[c.dateStr] || [];
+      const hasApt = dayApts.length > 0;
+
+      let aptBadges = '';
+      if (hasApt) {
+        aptBadges = `
+          <div class="cal-day-badges">
+            ${dayApts.map((a) => `<span class="cal-apt-pill" title="${escapeHTML(a.specialty)}">${escapeHTML(a.doctor_name.split(' ')[1] || a.doctor_name)}</span>`).join('')}
+          </div>
+        `;
+      }
+
+      return `
+        <div class="calendar-day-cell ${c.isOtherMonth ? 'other-month' : ''} ${isToday ? 'today' : ''} ${isSelected ? 'selected' : ''}" data-date="${c.dateStr}">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="cal-day-num">${c.dayNum}</span>
+            ${hasApt ? '<span class="cal-apt-dot" title="Consultation scheduled"></span>' : ''}
+          </div>
+          ${aptBadges}
+        </div>
+      `;
+    })
+    .join('');
+
+  // Bind day cell click handlers
+  dom.calendarDaysGrid.querySelectorAll('.calendar-day-cell').forEach((cell) => {
+    cell.addEventListener('click', () => {
+      const dateStr = cell.dataset.date;
+      appState.calendar.selectedDateStr = dateStr;
+      renderMonthlyCalendar();
+      renderSelectedDateAppointments(dateStr);
+    });
+  });
+
+  // Render appointments for currently selected date
+  renderSelectedDateAppointments(appState.calendar.selectedDateStr);
+}
+
+function renderSelectedDateAppointments(dateStr) {
+  if (!dom.selectedDateAptsContainer || !dom.selectedDateTitle) return;
+
+  const dObj = new Date(dateStr + 'T00:00:00');
+  const formattedDate = dObj.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+
+  dom.selectedDateTitle.textContent = `Consultations for ${formattedDate}`;
+
+  // Find matching appointments
+  const matched = (appState.appointments || []).filter((apt) =>
+    apt.appointment_date.startsWith(dateStr)
+  );
+
+  if (dom.selectedDateSubtitle) {
+    dom.selectedDateSubtitle.textContent =
+      matched.length === 0
+        ? 'No consultations scheduled for this date'
+        : `${matched.length} consultation${matched.length === 1 ? '' : 's'} scheduled`;
+  }
+
+  if (matched.length === 0) {
+    dom.selectedDateAptsContainer.innerHTML = `
+      <div style="text-align: center; padding: 2.5rem 1rem; border: 1px dashed #E5E7EB; border-radius: 8px;">
+        <div style="width: 44px; height: 44px; border-radius: 50%; background: #F8FAFC; color: #64748B; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem auto;">
+          📅
+        </div>
+        <h4 style="font-size: 0.95rem; font-weight: 600; color: #111827; margin-bottom: 0.25rem;">No Appointments</h4>
+        <p style="font-size: 0.8rem; color: #64748B; margin-bottom: 1rem;">No doctor visits or clinic consultations recorded for this date.</p>
+        <button type="button" class="btn btn-sm btn-primary" onclick="openAptModalWithDate('${dateStr}')">+ Book for ${formattedDate}</button>
+      </div>
+    `;
+    return;
+  }
+
+  dom.selectedDateAptsContainer.innerHTML = matched
+    .map((apt) => {
+      const hasEscort = !!apt.escort_name;
+      return `
+        <div style="background: #F8FAFC; border: 1px solid #E5E7EB; border-radius: 8px; padding: 1rem; margin-bottom: 0.85rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.35rem;">
+            <div>
+              <h4 style="font-size: 0.95rem; font-weight: 700; color: #111827; margin: 0;">${escapeHTML(apt.specialty)}</h4>
+              <div style="font-size: 0.8rem; color: #0F766E; font-weight: 600;">${escapeHTML(apt.doctor_name)}</div>
+            </div>
+            <span class="badge ${hasEscort ? 'badge-teal' : 'badge-warning'}" style="font-size: 0.7rem;">
+              ${hasEscort ? `Escort: ${escapeHTML(apt.escort_name)}` : 'Escort Needed'}
+            </span>
+          </div>
+
+          <div style="font-size: 0.775rem; color: #64748B; line-height: 1.5; margin-bottom: 0.5rem;">
+            <div>Patient: <strong>${escapeHTML(apt.patient_name)}</strong></div>
+            <div>Time: <strong>${escapeHTML(apt.appointment_date)}</strong></div>
+            <div>Location: ${escapeHTML(apt.location || 'Clinic')}</div>
+            ${apt.notes ? `<div style="margin-top: 4px; color: #374151;">Note: ${escapeHTML(apt.notes)}</div>` : ''}
+          </div>
+
+          ${
+            !hasEscort
+              ? `<button type="button" class="btn btn-sm btn-outline confirm-escort-btn" data-apt-id="${apt.appointment_id}" style="width: 100%; font-size: 0.75rem;">Confirm Family Escort</button>`
+              : ''
+          }
+        </div>
+      `;
+    })
+    .join('');
+}
+
+window.openAptModalWithDate = function (dateStr) {
+  const modal = document.getElementById('schedule-apt-modal');
+  const dateInput = document.getElementById('modal-apt-date');
+  if (dateInput) {
+    dateInput.value = `${dateStr}T10:00`;
+  }
+  if (modal) modal.classList.add('active');
+};
+
 async function confirmAppointmentEscort(aptId) {
   if (!appState.activeToken) return;
   const user = appState.currentUser;
-  const escortName = user ? (user.full_name || user.label.split(' (')[0]) : 'Family Member';
+  const escortName = user ? user.full_name || user.label.split(' (')[0] : 'Family Member';
 
   try {
     const res = await fetch(`${CONFIG.API_BASE_URL}/api/appointments/${aptId}/confirm-escort`, {
@@ -866,7 +1228,6 @@ async function sendAIMessage(queryText) {
     return;
   }
 
-  // Switch to AI Assistant view if not already active
   if (appState.currentView !== 'ai-assistant') {
     switchView('ai-assistant');
   }
@@ -922,34 +1283,9 @@ async function sendAIMessage(queryText) {
   }
 }
 
-// --- Search / Filter Helper ---
-
-function filterDashboard(query) {
-  const q = (query || '').toLowerCase().trim();
-
-  // Filter Medications
-  if (dom.dashboardMedTimeline) {
-    const medItems = dom.dashboardMedTimeline.querySelectorAll('.med-schedule-item');
-    medItems.forEach((el) => {
-      const text = el.textContent.toLowerCase();
-      el.style.display = text.includes(q) ? 'flex' : 'none';
-    });
-  }
-
-  // Filter Appointments
-  if (dom.dashboardAppointmentsList) {
-    const aptItems = dom.dashboardAppointmentsList.querySelectorAll('.appointment-card-item');
-    aptItems.forEach((el) => {
-      const text = el.textContent.toLowerCase();
-      el.style.display = text.includes(q) ? 'flex' : 'none';
-    });
-  }
-}
-
 // --- Modals & Modal Form Handling ---
 
 function setupModals() {
-  // Modal close buttons (data-close-modal="id")
   document.querySelectorAll('[data-close-modal]').forEach((btn) => {
     btn.addEventListener('click', () => {
       const modalId = btn.dataset.closeModal;
@@ -958,14 +1294,75 @@ function setupModals() {
     });
   });
 
-  // Close modals when clicking the overlay backdrop
   document.querySelectorAll('.modal-overlay').forEach((overlay) => {
     overlay.addEventListener('click', (e) => {
       if (e.target === overlay) overlay.classList.remove('active');
     });
   });
 
-  // Terms & Privacy Links
+  // Open modals
+  const btnOpenAddMember = document.getElementById('btn-open-add-member-modal');
+  if (btnOpenAddMember && dom.addMemberModal) {
+    btnOpenAddMember.addEventListener('click', () => dom.addMemberModal.classList.add('active'));
+  }
+
+  const btnOpenAddMed = document.getElementById('btn-open-add-med-modal');
+  if (btnOpenAddMed && dom.addPrescriptionModal) {
+    btnOpenAddMed.addEventListener('click', () => dom.addPrescriptionModal.classList.add('active'));
+  }
+
+  const btnOpenScheduleApt = document.getElementById('btn-open-schedule-apt-modal');
+  if (btnOpenScheduleApt && dom.scheduleAptModal) {
+    btnOpenScheduleApt.addEventListener('click', () => {
+      openAptModalWithDate(appState.calendar.selectedDateStr);
+    });
+  }
+
+  if (dom.calQuickAddBtn) {
+    dom.calQuickAddBtn.addEventListener('click', () => {
+      openAptModalWithDate(appState.calendar.selectedDateStr);
+    });
+  }
+
+  const dashAddAptBtn = document.getElementById('dash-quick-add-apt-btn');
+  if (dashAddAptBtn) {
+    dashAddAptBtn.addEventListener('click', () => {
+      openAptModalWithDate(todayDateStr);
+    });
+  }
+
+  const dashAddMedBtn = document.getElementById('dash-quick-add-med-btn');
+  if (dashAddMedBtn && dom.addPrescriptionModal) {
+    dashAddMedBtn.addEventListener('click', () => dom.addPrescriptionModal.classList.add('active'));
+  }
+
+  const editProfileBtns = ['dash-edit-profile-btn', 'settings-edit-health-btn'];
+  editProfileBtns.forEach((id) => {
+    const btn = document.getElementById(id);
+    if (btn && dom.onboardingModal) {
+      btn.addEventListener('click', () => {
+        const profile = appState.familyProfiles && appState.familyProfiles.length > 0 ? appState.familyProfiles[0] : null;
+        const user = appState.currentUser;
+        const nameInput = document.getElementById('onboard-fullname');
+        const ageInput = document.getElementById('onboard-age');
+        const bloodInput = document.getElementById('onboard-blood');
+        const emergencyInput = document.getElementById('onboard-emergency');
+        const allergiesInput = document.getElementById('onboard-allergies');
+        const conditionsInput = document.getElementById('onboard-conditions');
+
+        if (nameInput) nameInput.value = (profile && profile.full_name) || (user ? user.full_name : '');
+        if (ageInput) ageInput.value = (profile && profile.age) || '';
+        if (bloodInput) bloodInput.value = (profile && profile.blood_group) || '';
+        if (emergencyInput) emergencyInput.value = (profile && profile.emergency_contact) || '';
+        if (allergiesInput) allergiesInput.value = (profile && profile.allergies) || '';
+        if (conditionsInput) conditionsInput.value = (profile && profile.care_notes) || '';
+
+        dom.onboardingModal.classList.add('active');
+      });
+    }
+  });
+
+  // Terms and Privacy links
   if (dom.linkOpenTerms && dom.termsModal) {
     dom.linkOpenTerms.addEventListener('click', (e) => {
       e.preventDefault();
@@ -978,35 +1375,6 @@ function setupModals() {
       dom.privacyPolicyModal.classList.add('active');
     });
   }
-
-  // Personal Health Profile Edit Modal Handlers
-  const openOnboardingModal = () => {
-    if (!dom.onboardingModal) return;
-    const profile = appState.familyProfiles && appState.familyProfiles.length > 0 ? appState.familyProfiles[0] : null;
-    const user = appState.currentUser;
-
-    const nameInput = document.getElementById('onboard-fullname');
-    const ageInput = document.getElementById('onboard-age');
-    const bloodInput = document.getElementById('onboard-blood');
-    const emergencyInput = document.getElementById('onboard-emergency');
-    const allergiesInput = document.getElementById('onboard-allergies');
-    const conditionsInput = document.getElementById('onboard-conditions');
-
-    if (nameInput) nameInput.value = (profile && profile.full_name) || (user ? user.full_name : '');
-    if (ageInput) ageInput.value = (profile && profile.age) || '';
-    if (bloodInput) bloodInput.value = (profile && profile.blood_group) || '';
-    if (emergencyInput) emergencyInput.value = (profile && profile.emergency_contact) || '';
-    if (allergiesInput) allergiesInput.value = (profile && profile.allergies) || '';
-    if (conditionsInput) conditionsInput.value = (profile && profile.care_notes) || '';
-
-    dom.onboardingModal.classList.add('active');
-  };
-
-  const editProfileBtns = ['dash-edit-profile-btn', 'dash-profile-edit-btn', 'settings-edit-health-btn'];
-  editProfileBtns.forEach((id) => {
-    const btn = document.getElementById(id);
-    if (btn) btn.addEventListener('click', openOnboardingModal);
-  });
 
   // Onboarding / Profile Form Submission
   if (dom.onboardProfileForm) {
@@ -1062,14 +1430,7 @@ function setupModals() {
     });
   }
 
-  // Appointment Modal Triggers
-  const openAptModal = () => {
-    if (dom.scheduleAptModal) dom.scheduleAptModal.classList.add('active');
-  };
-  const dashAddAptBtn = document.getElementById('dash-quick-add-apt-btn');
-  if (dashAddAptBtn) dashAddAptBtn.addEventListener('click', openAptModal);
-
-  // Appointment Form Submission
+  // Appointment Form Submission (Calendar & DB Integration)
   if (dom.scheduleAptForm) {
     dom.scheduleAptForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -1079,11 +1440,16 @@ function setupModals() {
       const title = document.getElementById('modal-apt-title')?.value.trim();
       const doctor = document.getElementById('modal-apt-doctor')?.value.trim();
       const dateVal = document.getElementById('modal-apt-date')?.value;
+      const location = document.getElementById('modal-apt-location')?.value.trim() || 'Apollo Clinic, Consulting Suite';
+      const notes = document.getElementById('modal-apt-notes')?.value.trim();
 
       if (!title || !doctor || !dateVal) {
         alert('Please fill out all appointment details.');
         return;
       }
+
+      // Convert dateVal to formatted string if needed
+      const normalizedDate = dateVal.replace('T', ' ');
 
       try {
         const res = await fetch(`${CONFIG.API_BASE_URL}/api/appointments`, {
@@ -1096,9 +1462,9 @@ function setupModals() {
             profile_id: profileId,
             doctor_name: doctor,
             specialty: title,
-            appointment_date: dateVal,
-            location: 'Apollo Clinic, Consulting Suite',
-            notes: `Scheduled via CareSaathi`,
+            appointment_date: normalizedDate,
+            location: location,
+            notes: notes || 'Scheduled via CareSaathi Calendar',
           }),
         });
 
@@ -1112,19 +1478,20 @@ function setupModals() {
         dom.scheduleAptForm.reset();
         showToast(`Consultation with ${doctor} scheduled!`);
         logActivity(`Scheduled appointment with ${doctor}`, 'Just now • Appointments');
+
+        // Select the date of the new appointment on the calendar
+        const newDateStr = normalizedDate.split(' ')[0];
+        appState.calendar.selectedDateStr = newDateStr;
+        const newD = new Date(newDateStr + 'T00:00:00');
+        appState.calendar.year = newD.getFullYear();
+        appState.calendar.month = newD.getMonth();
+
         await loadAppointments();
       } catch (err) {
         alert(`Error scheduling: ${err.message}`);
       }
     });
   }
-
-  // Prescription Modal Triggers
-  const openRxModal = () => {
-    if (dom.addPrescriptionModal) dom.addPrescriptionModal.classList.add('active');
-  };
-  const dashAddMedBtn = document.getElementById('dash-quick-add-med-btn');
-  if (dashAddMedBtn) dashAddMedBtn.addEventListener('click', openRxModal);
 
   // Prescription Form Submission
   if (dom.addPrescriptionForm) {
@@ -1179,12 +1546,64 @@ function setupModals() {
       }
     });
   }
+
+  // Add Member Form Submission
+  if (dom.addMemberForm) {
+    dom.addMemberForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!appState.activeToken) return;
+
+      const name = document.getElementById('member-name')?.value.trim();
+      const relation = document.getElementById('member-relation')?.value.trim();
+      const ageVal = parseInt(document.getElementById('member-age')?.value, 10);
+      const blood = document.getElementById('member-blood')?.value;
+      const emergency = document.getElementById('member-emergency')?.value.trim();
+      const notes = document.getElementById('member-notes')?.value.trim();
+
+      if (!name || !relation || isNaN(ageVal)) {
+        alert('Please complete all required fields.');
+        return;
+      }
+
+      try {
+        const res = await fetch(`${CONFIG.API_BASE_URL}/api/family/profiles`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${appState.activeToken}`,
+          },
+          body: JSON.stringify({
+            full_name: name,
+            relationship: relation,
+            age: ageVal,
+            blood_group: blood,
+            emergency_contact: emergency,
+            care_notes: notes || 'Family coordination member',
+          }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert(`Failed to add family member: ${err?.detail || res.statusText}`);
+          return;
+        }
+
+        if (dom.addMemberModal) dom.addMemberModal.classList.remove('active');
+        dom.addMemberForm.reset();
+        showToast(`Family member ${name} added successfully!`);
+        logActivity(`Added family member: ${name}`, 'Just now • Family Circle');
+        await loadFamilyProfiles();
+      } catch (err) {
+        alert(`Error: ${err.message}`);
+      }
+    });
+  }
 }
 
 // --- Global Event Listeners Setup ---
 
 function setupEventListeners() {
-  // Navigation links
+  // Navigation Links
   dom.navLinks.forEach((link) => {
     link.addEventListener('click', (e) => {
       e.preventDefault();
@@ -1264,14 +1683,42 @@ function setupEventListeners() {
   if (dom.confirmLogoutBtn) dom.confirmLogoutBtn.addEventListener('click', performLogout);
   if (dom.cancelLogoutBtn) dom.cancelLogoutBtn.addEventListener('click', closeLogoutModal);
 
-  // Global Search Filter
-  if (dom.globalSearchInput) {
-    dom.globalSearchInput.addEventListener('input', (e) => {
-      filterDashboard(e.target.value);
+  // Calendar Month Navigation Buttons (PHASE 3)
+  if (dom.calPrevMonthBtn) {
+    dom.calPrevMonthBtn.addEventListener('click', () => {
+      if (appState.calendar.month === 0) {
+        appState.calendar.month = 11;
+        appState.calendar.year -= 1;
+      } else {
+        appState.calendar.month -= 1;
+      }
+      renderMonthlyCalendar();
     });
   }
 
-  // AI Prompt Chips (Dashboard & AI Assistant View)
+  if (dom.calNextMonthBtn) {
+    dom.calNextMonthBtn.addEventListener('click', () => {
+      if (appState.calendar.month === 11) {
+        appState.calendar.month = 0;
+        appState.calendar.year += 1;
+      } else {
+        appState.calendar.month += 1;
+      }
+      renderMonthlyCalendar();
+    });
+  }
+
+  if (dom.calTodayBtn) {
+    dom.calTodayBtn.addEventListener('click', () => {
+      const now = new Date();
+      appState.calendar.year = now.getFullYear();
+      appState.calendar.month = now.getMonth();
+      appState.calendar.selectedDateStr = todayDateStr;
+      renderMonthlyCalendar();
+    });
+  }
+
+  // AI Prompt Chips
   document.addEventListener('click', (e) => {
     const chip = e.target.closest('.ai-prompt-chip');
     if (chip) {
@@ -1308,7 +1755,7 @@ function setupEventListeners() {
     });
   }
 
-  // Delegated Clicks: Medication Status Toggle & Appointment Escort Confirmation
+  // Delegated Clicks: Medication Status & Appointment Escort
   document.addEventListener('click', (e) => {
     const medBtn = e.target.closest('.toggle-med-status-btn');
     if (medBtn) {
@@ -1335,16 +1782,12 @@ function setupEventListeners() {
 // --- Application Initialization (Strict Login Gate) ---
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Ensure white theme attribute is set
   document.documentElement.setAttribute('data-theme', 'light');
 
-  // Setup event listeners
   setupEventListeners();
 
-  // Check for Google OAuth callback parameters
   const handledOAuth = handleOAuthRedirectCallback();
 
-  // Check existing session
   const savedToken = sessionStorage.getItem('careSaathi_token') || localStorage.getItem('careSaathi_token');
   const savedUserJson = sessionStorage.getItem('careSaathi_user') || localStorage.getItem('careSaathi_user');
 
@@ -1368,7 +1811,7 @@ document.addEventListener('DOMContentLoaded', () => {
     showLoginScreen();
   }
 
-  // Navigation guard against back-forward traversal without auth
+  // Navigation guards
   window.addEventListener('hashchange', () => {
     const token = sessionStorage.getItem('careSaathi_token') || localStorage.getItem('careSaathi_token');
     if (!token && window.location.hash !== '#login') {
