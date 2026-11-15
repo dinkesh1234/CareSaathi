@@ -68,6 +68,15 @@ class DataRepository:
 
     def _seed_demo_data(self) -> None:
         """Seed initial fictional demonstration users and family profiles."""
+        self._users.clear()
+        self._profiles.clear()
+        self._medications.clear()
+        self._appointments.clear()
+        self._handoffs.clear()
+        self._activities.clear()
+        self._invitations.clear()
+        self._resolved_gap_ids.clear()
+
         now_iso = datetime.now(timezone.utc).isoformat()
 
         # Seed Family 1 Users (Sharma Family)

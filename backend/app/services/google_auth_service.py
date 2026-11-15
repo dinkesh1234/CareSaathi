@@ -44,13 +44,20 @@ class GoogleOAuthService:
         """Check whether Google OAuth client ID and secret are configured."""
         return settings.is_google_oauth_configured
 
-    def generate_authorization_url(self, return_state: Optional[str] = None) -> Dict[str, str]:
+    def generate_authorization_url(
+        self,
+        return_state: Optional[str] = None,
+        frontend_origin: Optional[str] = None,
+    ) -> Dict[str, str]:
         """Generate Google OAuth 2.0 consent URL with CSRF state token."""
         if not self.is_configured:
             raise ValueError("Google OAuth credentials are not configured in backend/.env")
 
         state = return_state or secrets.token_urlsafe(16)
-        _PENDING_STATES[state] = time.time()
+        _PENDING_STATES[state] = {
+            "created_at": time.time(),
+            "frontend_origin": frontend_origin or settings.FRONTEND_ORIGIN,
+        }
 
         params = {
             "client_id": self.client_id,
@@ -64,13 +71,26 @@ class GoogleOAuthService:
         auth_url = f"{GOOGLE_AUTH_ENDPOINT}?{urllib.parse.urlencode(params)}"
         return {"authorization_url": auth_url, "state": state}
 
+    def get_state_origin(self, state: Optional[str]) -> Optional[str]:
+        """Peek stored frontend origin for a state before consumption."""
+        if state and state in _PENDING_STATES:
+            entry = _PENDING_STATES[state]
+            if isinstance(entry, dict):
+                return entry.get("frontend_origin")
+        return None
+
     def validate_and_consume_state(self, state: Optional[str]) -> bool:
         """Validate and consume CSRF state parameter to prevent replay attacks and CSRF."""
         if not state:
             return False
         # Clean expired states (> 15 minutes old)
         now = time.time()
-        expired = [s for s, ts in _PENDING_STATES.items() if isinstance(ts, (int, float)) and now - ts > 900]
+        expired = [
+            s
+            for s, data in _PENDING_STATES.items()
+            if (isinstance(data, dict) and now - data.get("created_at", 0) > 900)
+            or (isinstance(data, (int, float)) and now - data > 900)
+        ]
         for s in expired:
             _PENDING_STATES.pop(s, None)
 

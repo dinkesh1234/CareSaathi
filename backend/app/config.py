@@ -31,7 +31,7 @@ class Settings(BaseModel):
     GOOGLE_CLIENT_ID: Optional[str] = Field(default=None)
     GOOGLE_CLIENT_SECRET: Optional[str] = Field(default=None)
     GOOGLE_REDIRECT_URI: str = Field(
-        default="http://127.0.0.1:8000/api/auth/google/callback"
+        default="https://web-production-6d958779.up.railway.app/api/auth/google/callback"
     )
 
     # Supabase PostgreSQL Database & Auth
@@ -89,7 +89,7 @@ def get_settings() -> Settings:
         GOOGLE_CLIENT_SECRET=os.getenv("GOOGLE_CLIENT_SECRET"),
         GOOGLE_REDIRECT_URI=os.getenv(
             "GOOGLE_REDIRECT_URI",
-            "http://127.0.0.1:8000/api/auth/google/callback",
+            "https://web-production-6d958779.up.railway.app/api/auth/google/callback",
         ),
         SUPABASE_URL=os.getenv("SUPABASE_URL"),
         SUPABASE_ANON_KEY=os.getenv("SUPABASE_ANON_KEY"),

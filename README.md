@@ -257,7 +257,4 @@ The repository includes production blueprints ready for immediate hosting:
 - **Active Branch:** `master` (single clean branch).
 - **Environment & Secrets:** `.env` and all credential tokens strictly excluded via `.gitignore`.
 - **License:** Open-source MIT.
-=======
-# CareSaathi-
-AI-powered family healthcare coordination platform focused on elderly care and connected family health management
->>>>>>> ac91c737aaa640e254111bdc73d8c181a19e240f
+

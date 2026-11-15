@@ -14,6 +14,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from app.config import settings
 from app.routers import (
     ai,
     appointments,
@@ -42,20 +43,27 @@ app = FastAPI(
 )
 
 # Configure Cross-Origin Resource Sharing (CORS)
-# This allows the frontend (HTML/JS) running on local dev servers to interact with this API.
+# Supports local development servers, configured frontend origin, and Vercel domains.
+cors_origins = [
+    "http://localhost",
+    "http://localhost:3000",
+    "http://localhost:5500",
+    "http://localhost:8080",
+    "http://127.0.0.1",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5500",
+    "http://127.0.0.1:8080",
+    "null",
+]
+if settings.FRONTEND_ORIGIN:
+    cleaned_origin = settings.FRONTEND_ORIGIN.rstrip("/")
+    if cleaned_origin not in cors_origins:
+        cors_origins.append(cleaned_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost",
-        "http://localhost:3000",
-        "http://localhost:5500",
-        "http://localhost:8080",
-        "http://127.0.0.1",
-        "http://127.0.0.1:3000",
-        "http://127.0.0.1:5500",
-        "http://127.0.0.1:8080",
-        "null",  # Supports opening index.html directly from file:// in local browsers
-    ],
+    allow_origins=cors_origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allow_headers=["*"],
