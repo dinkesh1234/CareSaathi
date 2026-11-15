@@ -84,28 +84,29 @@
 /* --- Dark Mode Theme Overrides (High-Contrast Healthcare Palette) --- */
 [data-theme="dark"] {
   /* Dark Backgrounds & Elevated Surfaces */
-  --color-bg-main:      #0B0F19; /* Deep charcoal/navy background */
+  --color-bg-main:      #0B0F17; /* Deep charcoal/near-black SaaS canvas */
   --color-surface:      #111827; /* Dark card surface */
   --color-surface-alt:  #1F2937; /* Elevated elements & inputs */
-  --color-border:       #374151; /* Clean border contrast */
-  --color-border-subtle:#1F2937;
+  --color-border:       #1E293B; /* Modern subtle border */
+  --color-border-subtle:#162032;
 
   /* Inverted Text & Light Readable Tones */
-  --color-navy-950: #FFFFFF;
-  --color-navy-900: #F9FAFB;
-  --color-navy-800: #F3F4F6;
-  --color-navy-700: #E5E7EB;
-  --color-navy-600: #9CA3AF;
-  --color-navy-500: #9CA3AF;
-  --color-navy-400: #6B7280;
-  --color-navy-200: #374151;
-  --color-navy-100: #1F2937;
+  --color-navy-950: #F8FAFC;
+  --color-navy-900: #F1F5F9;
+  --color-navy-800: #E2E8F0;
+  --color-navy-700: #CBD5E1;
+  --color-navy-600: #94A3B8;
+  --color-navy-500: #94A3B8;
+  --color-navy-400: #64748B;
+  --color-navy-200: #1E293B;
+  --color-navy-100: #162032;
 
   /* Teal Palette - Vibrant Accents on Dark Backgrounds */
   --color-teal-800: #2DD4BF;
   --color-teal-700: #2DD4BF;
   --color-teal-600: #14B8A6;
-  --color-teal-500: #2DD4BF;
+  --color-teal-500: #14B8A6;
+  --color-teal-400: #2DD4BF;
   --color-teal-200: #0F766E;
   --color-teal-100: rgba(20, 184, 166, 0.2);
   --color-teal-50:  rgba(20, 184, 166, 0.12);
@@ -2436,7 +2437,79 @@ input:checked + .slider::before {
   padding: 0 0.75rem;
 }
 
-/* Instant Demo Sign-In Buttons */
+/* Single Demo Account Access Card */
+.demo-access-container {
+  width: 100%;
+}
+
+.btn-demo-account.single-demo {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.12) 0%, rgba(17, 24, 39, 0.9) 100%);
+  border: 1px solid rgba(20, 184, 166, 0.35);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  text-align: left;
+}
+
+.btn-demo-account.single-demo:hover {
+  background: linear-gradient(135deg, rgba(20, 184, 166, 0.22) 0%, rgba(30, 41, 59, 0.95) 100%);
+  border-color: var(--color-teal-400);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(20, 184, 166, 0.25);
+}
+
+.demo-btn-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.demo-btn-badge {
+  display: inline-block;
+  align-self: flex-start;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: var(--color-teal-400);
+  background: rgba(20, 184, 166, 0.18);
+  padding: 0.15rem 0.55rem;
+  border-radius: var(--radius-full);
+}
+
+.demo-btn-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-navy-950);
+}
+
+.demo-btn-sub {
+  font-size: 0.8rem;
+  color: var(--color-navy-500);
+  line-height: 1.4;
+}
+
+.demo-btn-arrow {
+  font-size: 1.35rem;
+  color: var(--color-teal-400);
+  font-weight: 700;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.btn-demo-account.single-demo:hover .demo-btn-arrow {
+  transform: translateX(4px);
+}
+
+/* Fallback & Legacy Demo Buttons */
 .demo-accounts-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;

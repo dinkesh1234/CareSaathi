@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -21,56 +21,20 @@
         <p class="login-tagline">Family Healthcare &amp; Elderly-Care Coordination Platform</p>
       </div>
 
-      <!-- Primary Sign In: Google OAuth -->
-      <button type="button" id="login-google-btn" class="btn-google-login">
-        <svg class="google-g-icon" viewBox="0 0 24 24">
-          <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-          <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-          <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-          <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-        </svg>
-        <span>Continue with Google</span>
-      </button>
-
-      <!-- Google OAuth Testing Mode Clarification Box -->
-      <div class="oauth-test-notice">
-        <div class="oauth-test-notice-title">
-          <span>ℹ️</span> Important Note for Evaluators (Google OAuth)
-        </div>
-        <p>
-          Google Cloud OAuth is currently operating in <strong>Testing Mode</strong>. If you encounter Google <strong>Error 403: access_denied</strong> (<em>"CareSaathi has not completed the Google verification process"</em>):
-        </p>
-        <ol>
-          <li>Your Google account email must be added under <strong>Test users</strong> in Google Cloud Console &rarr; <em>OAuth consent screen &rarr; Test users &rarr; + ADD USERS</em>.</li>
-          <li>Authorized redirect URI is: <code>http://127.0.0.1:8000/api/auth/google/callback</code></li>
-        </ol>
-        <p style="margin-bottom: 0;">
-          <strong>Alternatively, click any instant demo account below</strong> to evaluate all family coordination features, RBAC boundaries, and real Gemini AI responses immediately!
-        </p>
+      <!-- Quick Demo Access (Single Demo Account: Anil Sharma, Family Owner) -->
+      <div class="demo-access-container" style="margin-bottom: 1.25rem;">
+        <button type="button" class="btn-demo-account single-demo" data-demo-id="user_anil_01" id="quick-demo-btn">
+          <div class="demo-btn-content">
+            <span class="demo-btn-badge">Instant Demo Access</span>
+            <span class="demo-btn-title">Explore CareSaathi as Family Owner</span>
+            <span class="demo-btn-sub">Anil Sharma • Complete access to schedules, vitals &amp; AI</span>
+          </div>
+          <span class="demo-btn-arrow" aria-hidden="true">→</span>
+        </button>
       </div>
 
       <div class="login-divider">
-        <span>or evaluate with demo accounts</span>
-      </div>
-
-      <!-- Instant Demo Sign-In Buttons -->
-      <div class="demo-accounts-grid">
-        <button type="button" class="btn-demo-account" data-demo-id="user_anil_01">
-          <strong>👑 Anil Sharma</strong>
-          <span>Family Owner • Full Control</span>
-        </button>
-        <button type="button" class="btn-demo-account" data-demo-id="user_caregiver_priya_03">
-          <strong>🩺 Nurse Priya</strong>
-          <span>Caregiver • Assigned Access</span>
-        </button>
-        <button type="button" class="btn-demo-account" data-demo-id="user_sunita_02">
-          <strong>🛡️ Sunita Sharma</strong>
-          <span>Parent / Child Guardian</span>
-        </button>
-        <button type="button" class="btn-demo-account" data-demo-id="user_rajesh_99">
-          <strong>🚫 Rajesh Verma</strong>
-          <span>Cross-Family Attacker (IDOR Test)</span>
-        </button>
+        <span>or sign in with credentials</span>
       </div>
 
       <!-- Direct Email / Password Login -->
@@ -81,13 +45,13 @@
 
       <!-- Email Login Form -->
       <form id="email-login-form">
-        <div class="form-group" style="margin-bottom: 0.65rem;">
+        <div class="form-group" style="margin-bottom: 0.75rem;">
           <label for="login-email" style="font-size: 0.775rem;">Email Address</label>
-          <input type="email" id="login-email" placeholder="anil.sharma@example.com" value="anil.sharma@example.com" required style="width: 100%;">
+          <input type="email" id="login-email" placeholder="name@example.com" required style="width: 100%;">
         </div>
-        <div class="form-group" style="margin-bottom: 0.85rem;">
+        <div class="form-group" style="margin-bottom: 1rem;">
           <label for="login-password" style="font-size: 0.775rem;">Password</label>
-          <input type="password" id="login-password" placeholder="••••••••••••" value="DemoPassword123!" required style="width: 100%;">
+          <input type="password" id="login-password" placeholder="••••••••••••" required style="width: 100%;">
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%; min-height: 44px; font-weight: 700;">Sign In to CareSaathi</button>
       </form>
@@ -802,7 +766,7 @@
                     <td>Sister / Aunt</td>
                     <td><span class="invitation-badge pending">⏳ Pending</span></td>
                     <td>
-                      <button class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText('http://127.0.0.1:3000/#invitation?token=demo'); alert('Invitation link copied to clipboard!');">Copy Link</button>
+                      <button class="btn btn-sm btn-secondary" onclick="navigator.clipboard.writeText(window.location.origin + '/#invitation?token=demo'); alert('Invitation link copied to clipboard!');">Copy Link</button>
                       <button class="btn btn-sm btn-outline" style="color: var(--color-error); margin-left: 0.25rem;" onclick="alert('Invitation cancelled.'); this.closest('tr').remove();">Cancel</button>
                     </td>
                   </tr>

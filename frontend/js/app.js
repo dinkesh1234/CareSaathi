@@ -4,8 +4,23 @@
  */
 
 // Configuration
+// Automatically detect local environment vs production hosting (e.g. Vercel)
+const isLocalhost =
+  typeof window !== 'undefined' &&
+  (window.location.hostname === 'localhost' ||
+   window.location.hostname === '127.0.0.1' ||
+   window.location.hostname === '0.0.0.0');
+
+// In production, all API calls use relative paths ('/api/*') which Vercel proxies to Railway.
+// In local development, direct calls to the local FastAPI backend (http://127.0.0.1:8000).
+const resolvedBaseUrl =
+  (typeof window !== 'undefined' && window.CARESAATHI_API_URL) ||
+  (isLocalhost && typeof window !== 'undefined' && window.location.port !== '8000'
+    ? 'http://127.0.0.1:8000'
+    : '');
+
 const CONFIG = {
-  API_BASE_URL: 'http://127.0.0.1:8000',
+  API_BASE_URL: resolvedBaseUrl,
   HEALTH_ENDPOINT: '/api/health',
   POLL_INTERVAL_MS: 30000,
   TIMEOUT_MS: 5000,
@@ -14,7 +29,7 @@ const CONFIG = {
 // Application State
 const appState = {
   currentView: 'dashboard',
-  currentTheme: 'light', // 'light' | 'dark'
+  currentTheme: 'dark', // 'dark' is default for modern healthcare SaaS
   privacyMode: true,     // true = masked, false = revealed
   backendStatus: 'checking', // 'online' | 'offline' | 'checking'
   backendLatency: null,
@@ -187,7 +202,7 @@ function closeMobileSidebar() {
  * Initialize Light / Dark Theme
  */
 function initTheme() {
-  const savedTheme = localStorage.getItem('careSaathi_theme') || 'light';
+  const savedTheme = localStorage.getItem('careSaathi_theme') || 'dark';
   setTheme(savedTheme, false);
 }
 
@@ -1561,58 +1576,6 @@ function showToast(message) {
 }
 
 /**
- * Handle Direct Email & Password Sign Up (Account Registration)
- * @param {Event} e
- */
-async function handleEmailSignup(e) {
-  if (e) e.preventDefault();
-  const fullName = document.getElementById('signup-fullname')?.value.trim();
-  const email = document.getElementById('signup-email')?.value.trim();
-  const password = document.getElementById('signup-password')?.value;
-  const familyName = document.getElementById('signup-family')?.value.trim();
-
-  if (!fullName || !email || !password || !familyName) {
-    alert('Please fill out all signup fields.');
-    return;
-  }
-
-  try {
-    const res = await fetch(`${CONFIG.API_BASE_URL}/api/auth/signup`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        full_name: fullName,
-        email: email,
-        password: password,
-        family_name: familyName,
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      alert(`Signup failed: ${data?.error?.message || data?.detail || 'Registration error'}`);
-      return;
-    }
-
-    const authUser = {
-      label: `${data.user.full_name} (${data.user.role.replace('_', ' ')})`,
-      user_id: data.user.user_id,
-      email: data.user.email,
-      role: data.user.role,
-      family_id: data.user.family_id,
-      token: data.access_token,
-    };
-
-    appState.demoTokens.unshift(authUser);
-    populateRoleSelector(appState.demoTokens);
-    applyUserSession(authUser);
-    showToast(`🎉 Welcome to CareSaathi, ${data.user.full_name}! Account created.`);
-    logActivity(`Created new family account (${familyName})`, 'Just now • Auth', '👤');
-  } catch (err) {
-    alert(`Signup error: ${err.message}`);
-  }
-}
-
-/**
  * Fetch and Render Prescription Medications across Family Care Circle
  */
 async function loadMedications() {
@@ -2592,8 +2555,8 @@ async function sendAIMessage(queryText) {
     console.error('AI Chat Error:', err);
     appendChatMessage(
       'assistant',
-      `<p style="color: var(--color-danger-text);">⚠️ Unable to connect to CareSaathi AI service. Please verify that the backend is running at <code>${CONFIG.API_BASE_URL}</code>.</p>`,
-      `Error: ${err.message}`
+      `<p style="color: var(--color-danger-text); margin: 0;">⚠️ CareSaathi AI is temporarily unavailable. Please check your internet connection or try again shortly.</p>`,
+      `Status: Connection Unavailable`
     );
   } finally {
     appState.isAIGenerating = false;
@@ -3001,7 +2964,7 @@ async function handleCreateInvitation(e) {
     if (resBox && resMsg && linkInp) {
       resBox.style.display = 'block';
       resMsg.textContent = `Invitation token generated for ${data.invitee_email} (${data.role}). Status: ${data.status}.`;
-      linkInp.value = data.invitation_link || `http://127.0.0.1:3000/#invitation?token=${data.token}`;
+      linkInp.value = data.invitation_link || `${window.location.origin}/#invitation?token=${data.token}`;
     }
 
     showNotificationToast(`Invitation created for ${data.invitee_email}!`);
@@ -3163,7 +3126,7 @@ async function handleDrawerChatSubmit(e) {
     if (typingEl) typingEl.remove();
     messagesContainer.insertAdjacentHTML(
       'beforeend',
-      `<div class="ai-msg bot" style="color: var(--color-error); font-size: 0.8rem;">CareSaathi AI could not be reached: ${escapeHTML(err.message)}</div>`
+      `<div class="ai-msg bot" style="color: var(--color-error); font-size: 0.8rem; background: var(--color-surface); border: 1px solid var(--color-border); padding: 0.5rem 0.75rem; border-radius: var(--radius-md);">CareSaathi AI is temporarily unreachable. Please check your connection and try again.</div>`
     );
   }
 }

@@ -32,7 +32,7 @@ STRICT CLINICAL SAFETY RULES:
 3. NEVER advise altering drug dosages or starting new medications.
 4. For acute or severe symptoms (e.g. chest pain, difficulty breathing, sudden numbness, uncontrolled bleeding), immediately instruct the user to call emergency medical services (108 or 112 in India, 911 in the US) or visit the nearest emergency room.
 5. Base all answers strictly on the authorized family records provided in the conversation context. Do not invent or assume data about members not in your authorized context.
-6. Keep language warm, clear, accessible to family members and elderly seniors, and professional.
+6. Keep responses concise, clear, structured in brief bullet points, and directly relevant to the user's question without unnecessary filler.
 """
 
 
@@ -180,13 +180,10 @@ class GeminiAIAssistantProvider(BaseAIAssistantProvider):
                 authorized_members_count=len(authorized_profiles),
                 authorized_member_names=[p.full_name for p in authorized_profiles],
             )
-        except Exception as err:
-            # On rate limit (HTTP 429) or network issue, fail safely with fallback provider
+        except Exception:
+            # On rate limit (HTTP 429) or network issue, fail safely with coordinator
             fallback_res = self._mock_fallback.generate_response(user, authorized_profiles, query, history)
-            fallback_res.response = (
-                f"{fallback_res.response}\n\n"
-                f"*(Note: Generated via CareSaathi fallback coordinator while connecting to Gemini service: {str(err)[:60]})*"
-            )
+            fallback_res.is_mock = True
             return fallback_res
 
 
