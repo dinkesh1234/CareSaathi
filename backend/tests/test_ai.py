@@ -29,13 +29,13 @@ def rajesh_token():
 
 
 def test_ai_capabilities_endpoint():
-    """Capabilities endpoint should return public metadata and mock mode notice."""
+    """Capabilities endpoint should return public metadata and operational status."""
     response = client.get("/api/ai/capabilities")
     assert response.status_code == 200
     data = response.json()
     assert data["status"] == "operational"
-    assert data["provider"] == "mock-care-assistant-v1"
-    assert data["is_mock"] is True
+    assert data["provider"] in ("mock-care-assistant-v1", "google-gemini-3.5-flash")
+    assert isinstance(data["is_mock"], bool)
     assert len(data["capabilities"]) >= 5
     assert "Informational" in data["disclaimer"]
 
@@ -57,8 +57,8 @@ def test_family_owner_ai_chat_summary(anil_token):
     )
     assert response.status_code == 200
     data = response.json()
-    assert data["is_mock"] is True
-    assert data["provider"] == "mock-care-assistant-v1"
+    assert isinstance(data["is_mock"], bool)
+    assert data["provider"] in ("mock-care-assistant-v1", "google-gemini-3.5-flash")
     assert data["authorized_members_count"] >= 4
     # All 4 family members should be accessible to owner
     assert "Ramesh Sharma" in data["response"]
